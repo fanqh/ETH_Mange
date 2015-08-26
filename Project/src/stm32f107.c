@@ -84,7 +84,12 @@ void System_Setup(void)
   SystemInit();
 
   /* Enable USART2 clock */
-  RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+ // RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+	
+	
+	  /* Configure the USART port */  
+  USART_COM1_Init();
 
 
   /* Enable ETHERNET clock  */
@@ -112,8 +117,7 @@ void System_Setup(void)
   BEEP_Configuration();
   STM_EVAL_BEEPOn();
   
-  /* Configure the USART port */  
-  USART_COM1_Init();
+
   
   STM_EVAL_BEEPOff();
 
