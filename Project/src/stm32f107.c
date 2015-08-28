@@ -86,12 +86,8 @@ void System_Setup(void)
   /* Enable USART2 clock */
  // RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
-	
-	
 	  /* Configure the USART port */  
   USART_COM1_Init();
-
-
   /* Enable ETHERNET clock  */
   RCC_AHBPeriphClockCmd(RCC_AHBPeriph_ETH_MAC | RCC_AHBPeriph_ETH_MAC_Tx |
                         RCC_AHBPeriph_ETH_MAC_Rx, ENABLE);
@@ -109,65 +105,6 @@ void System_Setup(void)
 
   /* to assure Ethernet Phy work well */ //lihao
   Ethernet_Security(); 
-  
-  /* ADC configuration */
-  ADC_Configuration();
-
-  /* Configure the BEEP ·äÃùÆ÷ */
-  BEEP_Configuration();
-  STM_EVAL_BEEPOn();
-  
-
-  
-  STM_EVAL_BEEPOff();
-
-  /* Initialize the STM3210C-EVAL's LCD */
-  STM3210C_LCD_Init();
-
-  STM_EVAL_BEEPOff();
-      
-  /* Initialize STM3210C-EVAL's LEDs */
-  STM_EVAL_LEDInit(LED1);
-  STM_EVAL_LEDInit(LED2);
-  STM_EVAL_LEDInit(LED3);
-  STM_EVAL_LEDInit(LED4);
-
-  /* Turn on leds available on STM3210X-EVAL */
-  STM_EVAL_LEDOn(LED1);
-  STM_EVAL_LEDOn(LED2);
-  STM_EVAL_LEDOn(LED3);
-  STM_EVAL_LEDOn(LED4);
-
-  /* Clear the LCD */
-  LCD_Clear(Blue);
-
-  /* Set the LCD Back Color */
-  LCD_SetBackColor(Blue);
-
-  /* Set the LCD Text Color */
-  LCD_SetTextColor(White);
-
-  /* Display message on the LCD*/
-  LCD_DisplayStringLine(Line0, MESSAGE1);
-  LCD_DisplayStringLine(Line1, MESSAGE2);
-  LCD_DisplayStringLine(Line2, MESSAGE3);
-  LCD_DisplayStringLine(Line3, MESSAGE4);
-  LCD_DisplayWelcomeStr(Line9);  
-
-  LCD_DisplayStringLine(Line7, "   EEPROM TEST....   ");
-  /* EEPROM 24C02 TEST */
-  if(FAILED == ARMJISHU_EEPROM_TEST())
-  {
-    printf(" --->FAILED!\n\r"); 
-    LCD_DisplayStringLine(Line7, "EEPROM TEST *FAILED!");
-  }
-  else
-  {
-    printf(" --->PASSED!\n\r"); 
-    LCD_DisplayStringLine(Line7, "EEPROM TEST PASSED!!");
-  }
-  
-  ADS7843_Init();
   
   /* RTC TEST */
   //RTC_Test();

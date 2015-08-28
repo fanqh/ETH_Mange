@@ -235,13 +235,14 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
       iptab[3] = (uint8_t)(IPaddress);
 
       sprintf((char*)iptxt, "   %d.%d.%d.%d    ", iptab[3], iptab[2], iptab[1], iptab[0]);
+			printf("iptxt\r\n");
 
       /* Display the new IP address */
 #if LWIP_DHCP
       if (netif.flags & NETIF_FLAG_DHCP)
       {        
 		/* Display the IP address */
-		LCD_DisplayStringLine(Line7, "IP address assigned ");
+				LCD_DisplayStringLine(Line7, "IP address assigned ");
         LCD_DisplayStringLine(Line8, "  by a DHCP server  ");
         LCD_DisplayStringLine(Line9, iptxt);
 		  Delay_ARMJISHU(800 * KEY_DELAY);
