@@ -63,25 +63,11 @@ int main(void)
         and STM3210C-EVAL resources */
   System_Setup();
              
-  Show_Msg();
+  //Show_Msg();
   //Check_ETH_PHY();
 
   /* Initilaize the LwIP satck */
   LwIP_Init();
-
-//  Check_ETH_PHY();
-//  
-//  /* Initilaize the HelloWorld module */
-//  HelloWorld_init();
-//  
-//  /* Initilaize the helloarmjishu module  telnet 8000 */
-//  helloarmjishu_init();
-
-//  /* Initilaize the webserver module */
-//  httpd_init();
-
-//  /* Initialize the TFTP server */
-//  tftpd_init();
   
   /* Infinite loop */
   while (1)
@@ -157,7 +143,7 @@ void System_Periodic_Handle(void)
   Display_Periodic_Handle(LocalTime);
 
   /* 显示系统运行时间 */
-  LCD_Time_Update(LocalTime);
+//  LCD_Time_Update(LocalTime);
   
   /* LwIP periodic services are done here */
   LwIP_Periodic_Handle(LocalTime);

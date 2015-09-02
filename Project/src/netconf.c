@@ -237,109 +237,59 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
       sprintf((char*)iptxt, "   %d.%d.%d.%d    ", iptab[3], iptab[2], iptab[1], iptab[0]);
 			printf("iptxt\r\n");
 
-      /* Display the new IP address */
-#if LWIP_DHCP
-      if (netif.flags & NETIF_FLAG_DHCP)
-      {        
-		/* Display the IP address */
-				LCD_DisplayStringLine(Line7, "IP address assigned ");
-        LCD_DisplayStringLine(Line8, "  by a DHCP server  ");
-        LCD_DisplayStringLine(Line9, iptxt);
-		  Delay_ARMJISHU(800 * KEY_DELAY);
-		/** Start the client/server application: only when a dynamic IP address has been obtained  **/
-
-      }
-      else
-#endif
-      {
-        /* Display the IP address */
-		LCD_DisplayStringLine(Line8, "  Static IP address   ");
-        LCD_DisplayStringLine(Line9, iptxt);	    
-//		Delay_ARMJISHU(LCD_DELAY);
-//        Delay_ARMJISHU(11000*KEY_DELAY);
-//        ETH_GetMACAddress(0, macaddress);
-//        printf("\n\r Your MAC are configured: %X:%X:%X:%X:%X:%X", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
-//        printf("\n\r Static IP address: %s", iptxt);
-//        Delay_ARMJISHU(200*KEY_DELAY);
-      }           
-
-	    /* Clear the LCD */	   	
-        LCD_Clear(Black);
-	    LCD_SetBackColor(Black);
-        LCD_SetTextColor(White);		
-        LCD_DisplayStringLine(Line8, "  www.armjishu.com  ");
-        LCD_DisplayWelcomeStr(Line9);        
-
         /* www.armjishu.com LCDÏÔÊ¾Íø¿Ú×´Ì¬ */
         PHYRegData = ETH_ReadPHYRegister(0,17);
         if(PHYRegData & 0x3000)
         {  
           /* Set Ethernet speed to 10M following the autonegotiation */    
           printf("\n\r==>ETH_Speed_10M!");
-          LCD_DisplayStringLine(Line5, "   ETH_Speed_10M    ");
         }
         else
         {   
           /* Set Ethernet speed to 100M following the autonegotiation */ 
           printf("\n\r==>ETH_Speed_100M!");     
-          LCD_DisplayStringLine(Line5, "   ETH_Speed_100M   ");
         } 
         /* Configure the MAC with the Duplex Mode fixed by the autonegotiation process */
         if((PHYRegData & 0xA000) != (uint32_t)RESET)
         {
           /* Set Ethernet duplex mode to FullDuplex following the autonegotiation */
           printf("\n\r==>ETH_Mode_FullDuplex!");
-          LCD_DisplayStringLine(Line6, " ETH_Mode_FullDuplex");
         }
         else
         {
           /* Set Ethernet duplex mode to HalfDuplex following the autonegotiation */
           printf("\n\r==>ETH_Mode_HalfDuplex!");
-          LCD_DisplayStringLine(Line6, " ETH_Mode_HalfDuplex");
         }
-        
-        	   
-        iptab[0] = (uint8_t)(IPaddress >> 24);
-        iptab[1] = (uint8_t)(IPaddress >> 16);
-        iptab[2] = (uint8_t)(IPaddress >> 8);
-        iptab[3] = (uint8_t)(IPaddress);
-	    sprintf((char*)iptxt, "ip: %d.%d.%d.%d ", iptab[3], iptab[2], iptab[1], iptab[0]);		
-
-        LCD_DisplayWelcomeStr(Line0);
-	    LCD_DisplayStringLine(Line2, iptxt);
-        //Delay_ARMJISHU(11000*KEY_DELAY);
 
         ETH_GetMACAddress(0, macaddress);
-        printf("\n\r Your MAC are configured: %X:%X:%X:%X:%X:%X", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
-        printf("\n\r Your Ip are configured: %s\n\r", &iptxt[3]);
-        
+        printf("\n\r Your MAC are configured: %X:%X:%X:%X:%X:%X", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);      
 //	    if(Server)
 	    {
-	      LCD_DisplayStringLine(Line1, "  You are a server  ");
+	      printf("  You are a server\r\n  ");
 		 
 		  /* Initialize the server application */
 	      server_init(); 
 	    }
 //	    else
 	    {
-	      LCD_DisplayStringLine(Line1, "  You are a client  ");
+	      printf("  You are a client\r\n  ");
 		  
 		  /* Initialize the client application */
 	      client_init();
 	    }	 
 
-        /* Read the new gw address www.armjishu.com */
-        IPaddress = netif.gw.addr;
-	    iptab[0] = (uint8_t)(IPaddress >> 24);
-        iptab[1] = (uint8_t)(IPaddress >> 16);
-        iptab[2] = (uint8_t)(IPaddress >> 8);
-        iptab[3] = (uint8_t)(IPaddress);
-        sprintf((char*)iptxt, "gw: %d.%d.%d.%d  ", iptab[3], iptab[2], iptab[1], iptab[0]);
-        printf(" Your gw are configured: %s\n\r", &iptxt[3]);
-        LCD_DisplayStringLine(Line3, iptxt);
+		/* Read the new gw address www.armjishu.com */
+		IPaddress = netif.gw.addr;
+		iptab[0] = (uint8_t)(IPaddress >> 24);
+		iptab[1] = (uint8_t)(IPaddress >> 16);
+		iptab[2] = (uint8_t)(IPaddress >> 8);
+		iptab[3] = (uint8_t)(IPaddress);
+		sprintf((char*)iptxt, "gw: %d.%d.%d.%d  ", iptab[3], iptab[2], iptab[1], iptab[0]);
+		printf(" Your gw are configured: %s\n\r", &iptxt[3]);
+		LCD_DisplayStringLine(Line3, iptxt);
 
-        /* »Ö¸´ the new IP address */
-        IPaddress = netif.ip_addr.addr;
+		/* »Ö¸´ the new IP address */
+		IPaddress = netif.ip_addr.addr;
         
     }
 
@@ -348,20 +298,9 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
     else if (IPaddress == 0)
     {
       /* We still waiting for the DHCP server */
-	  LCD_DisplayStringLine(Line4, "     Looking for    ");
-      LCD_DisplayStringLine(Line5, "     DHCP server    ");
-      LCD_DisplayStringLine(Line6, "     please wait... ");
-
-      LedToggle &= 3;
-
-      if(LedToggle ==0)
-      LCD_DisplayWelcomeStr(Line7); 
-      else if(LedToggle ==1)
-      LCD_DisplayStringLine(Line7, "  ***************** ");
-      else if(LedToggle ==2)
-      LCD_DisplayStringLine(Line7, "  %%%%%%%%%%%%%%%%% ");
-      else if(LedToggle ==3)
-      LCD_DisplayStringLine(Line7, "  ################# ");
+			printf("     Looking for\r\n    ");
+      printf("     DHCP server\r\n    ");
+      printf("     please wait\r\n... ");
       
       STM_EVAL_LEDToggle((Led_TypeDef)(LedToggle++));
       
@@ -373,7 +312,7 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
         struct ip_addr netmask;
         struct ip_addr gw;
 
-        LCD_DisplayStringLine(Line7, "    DHCP timeout    ");        
+        printf("    DHCP timeout\r\n    ");        
 
         dhcp_stop(&netif);
 

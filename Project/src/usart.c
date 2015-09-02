@@ -74,27 +74,6 @@ void USART_COM1_Init(void)
   USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 
   STM_EVAL_COMInit(COM1, &USART_InitStructure);
-
-  /* Output a message on Hyperterminal using printf function */
-  //printf("\n\n\n\rUSART Printf Example: retarget the C library printf function to the USART\n\r");
-  printf("\r\n\n\n\r WWW.ARMJISHU.COM  %s configured....", EVAL_COM1_STR);
-  printf("\n\r ############ WWW.ARMJISHU.COM! ############ ("__DATE__ " - " __TIME__ ")");
-
-  printf("%s", STM32F10x_STR);
-
-  printf("\n\r WWW.ARMJISHU.COM use __STM32F10X_STDPERIPH_VERSION %d.%d.%d",
-			__STM32F10X_STDPERIPH_VERSION_MAIN,
-			__STM32F10X_STDPERIPH_VERSION_SUB1,
-			__STM32F10X_STDPERIPH_VERSION_SUB2);
-  printf("\n\r 产品内部Flash大小为：%dK字节！ \t www.armjishu.com",
-            *(__IO uint16_t*)(0x1FFFF7E0));
-#if(__STM32F10X_STDPERIPH_VERSION >= 0x00030300)
-  printf("\n\r 系统内核时钟频率(SystemCoreClock)为：%dHz.\n\r",
-            SystemCoreClock);
-#else
-  printf("\n\r 系统内核时钟频率(SystemCoreClock)为：%dHz.\n\r",
-            SystemFrequency);
-#endif
   
 }
 
