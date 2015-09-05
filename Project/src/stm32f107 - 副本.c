@@ -76,6 +76,57 @@ TestStatus Dual_CAN_Test(void);
   * @param  None
   * @retval None
   */
+#if 0
+void System_Setup(void)
+{
+  RCC_ClocksTypeDef RCC_Clocks;
+
+  /* Setup STM32 clock, PLL and Flash configuration) */
+  SystemInit();
+
+  /* Enable USART2 clock */
+ // RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB2Periph_USART1, ENABLE);
+	  /* Configure the USART port */  
+  USART_COM1_Init();
+  /* Enable ETHERNET clock  */
+  RCC_AHBPeriphClockCmd(RCC_AHBPeriph_ETH_MAC | RCC_AHBPeriph_ETH_MAC_Tx |
+                        RCC_AHBPeriph_ETH_MAC_Rx, ENABLE);
+
+  /* Enable GPIOs and ADC1 clocks */
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC |
+                         RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOE | RCC_APB2Periph_AFIO |
+						 RCC_APB2Periph_ADC1, ENABLE);
+  
+  /* NVIC configuration */
+  NVIC_Configuration();  
+
+  /* Configure the GPIO ports */
+  GPIO_Configuration();
+
+  /* to assure Ethernet Phy work well */ //lihao
+  Ethernet_Security(); 
+  
+  /* RTC TEST */
+  //RTC_Test();
+
+  /* Configure the Ethernet peripheral */
+  Ethernet_Configuration();
+
+  GPIO_KEY_Config();
+  
+  /* SystTick configuration: an interrupt every 10ms */
+  RCC_GetClocksFreq(&RCC_Clocks);
+  SysTick_Config(RCC_Clocks.SYSCLK_Frequency / 100);
+
+  /* Update the SysTick IRQ priority should be higher than the Ethernet IRQ */
+  /* The Localtime should be updated during the Ethernet packets processing */
+  NVIC_SetPriority (SysTick_IRQn, 1);  
+  
+  /* Configure the Key button */ 
+  STM_EVAL_PBInit(Button_KEY, Mode_GPIO);
+}
+#else
 void System_Setup(void)
 {
   RCC_ClocksTypeDef RCC_Clocks;
@@ -93,7 +144,8 @@ void System_Setup(void)
 
   /* Enable GPIOs and ADC1 clocks */
   RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB | RCC_APB2Periph_GPIOC |
-                         RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOE | RCC_APB2Periph_AFIO , ENABLE);
+                         RCC_APB2Periph_GPIOD | RCC_APB2Periph_GPIOE | RCC_APB2Periph_AFIO |
+						 RCC_APB2Periph_ADC1, ENABLE);
   
   /* NVIC configuration */
   NVIC_Configuration();  
@@ -105,9 +157,9 @@ void System_Setup(void)
   Ethernet_Security(); 
   
   /* ADC configuration */
-//  ADC_Configuration();
+  ADC_Configuration();
 
-  /* Configure the BEEP ·äÃùÆ÷ */
+  /* Configure the BEEP ??? */
   BEEP_Configuration();
   STM_EVAL_BEEPOn();
   
@@ -121,6 +173,18 @@ void System_Setup(void)
 
   STM_EVAL_BEEPOff();
       
+  /* Initialize STM3210C-EVAL's LEDs */
+  STM_EVAL_LEDInit(LED1);
+  STM_EVAL_LEDInit(LED2);
+  STM_EVAL_LEDInit(LED3);
+  STM_EVAL_LEDInit(LED4);
+
+  /* Turn on leds available on STM3210X-EVAL */
+  STM_EVAL_LEDOn(LED1);
+  STM_EVAL_LEDOn(LED2);
+  STM_EVAL_LEDOn(LED3);
+  STM_EVAL_LEDOn(LED4);
+
   /* Clear the LCD */
   LCD_Clear(Blue);
 
@@ -129,6 +193,26 @@ void System_Setup(void)
 
   /* Set the LCD Text Color */
   LCD_SetTextColor(White);
+
+  /* Display message on the LCD*/
+  LCD_DisplayStringLine(Line0, MESSAGE1);
+  LCD_DisplayStringLine(Line1, MESSAGE2);
+  LCD_DisplayStringLine(Line2, MESSAGE3);
+  LCD_DisplayStringLine(Line3, MESSAGE4);
+  LCD_DisplayWelcomeStr(Line9);  
+
+  LCD_DisplayStringLine(Line7, "   EEPROM TEST....   ");
+  /* EEPROM 24C02 TEST */
+  if(FAILED == ARMJISHU_EEPROM_TEST())
+  {
+    printf(" --->FAILED!\n\r"); 
+    LCD_DisplayStringLine(Line7, "EEPROM TEST *FAILED!");
+  }
+  else
+  {
+    printf(" --->PASSED!\n\r"); 
+    LCD_DisplayStringLine(Line7, "EEPROM TEST PASSED!!");
+  }
   
   ADS7843_Init();
   
@@ -138,7 +222,7 @@ void System_Setup(void)
   /* Configure the Ethernet peripheral */
   Ethernet_Configuration();
 
-//  GPIO_KEY_Config();
+  GPIO_KEY_Config();
   
   /* SystTick configuration: an interrupt every 10ms */
   RCC_GetClocksFreq(&RCC_Clocks);
@@ -149,9 +233,9 @@ void System_Setup(void)
   NVIC_SetPriority (SysTick_IRQn, 1);  
   
   /* Configure the Key button */ 
-  //STM_EVAL_PBInit(Button_KEY, Mode_GPIO);
+  STM_EVAL_PBInit(Button_KEY, Mode_GPIO);
 }
-
+#endif
 
 void Ethernet_Security(void)
 {

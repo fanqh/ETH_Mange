@@ -31,7 +31,9 @@
 #define UDP_SERVER_PORT      8006
 #define UDP_CLIENT_PORT      4
 #define TCP_PORT      4
-#define UDP_SERVER_IP				192,168,0,101
+//#define UDP_SERVER_IP				192,168,0,104
+#define UDP_SERVER_IP				255,255,255,255
+
 
 #define UDP_LOCAL_IP        192,168,0,102                                                                                                                                                                                                                         
 
@@ -83,9 +85,6 @@ void client_init(void)
 	 upcb->local_port = 5;
 	 udp_connect(upcb, &ip_udp_server, UDP_SERVER_PORT);	 
 	 udp_send(upcb, p); 
-	
-	
-	
 	   /* Reset the upcb */
    udp_disconnect(upcb);
    
@@ -118,7 +117,7 @@ void udp_client_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
   /* Read the Server's IP address */
   iptab[0] = (uint8_t)((uint32_t)(addr->addr) >> 24);  
   iptab[1] = (uint8_t)((uint32_t)(addr->addr) >> 16);
-  iptab[2] = (uint8_t)((uint32_t)(addr->addr) >> 8);
+  iptab[2] = (uint8_t)((uint32_t)(addr->addr) >> 8); 
   iptab[3] = (uint8_t)((uint32_t)(addr->addr));
 
   sprintf((char*)iptxt, "is: %d.%d.%d.%d     ", iptab[3], iptab[2], iptab[1], iptab[0]);
