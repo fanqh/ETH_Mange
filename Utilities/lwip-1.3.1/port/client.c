@@ -23,6 +23,7 @@
 #include "lwip/pbuf.h"
 #include "lwip/udp.h"
 #include "lwip/tcp.h"
+#include "lwip/ip_addr.h"
 #include <string.h>
 #include <stdio.h>
 
@@ -77,7 +78,7 @@ void client_init(void)
    struct udp_pcb *upcb;
    struct pbuf *p;
 
-    SET_IP4_ADDR(&ip_udp_server,UDP_SERVER_IP);                              
+   SET_IP4_ADDR(&ip_udp_server, UDP_SERVER_IP);                              
    /* Create a new UDP control block  */
    upcb = udp_new();   
    p = pbuf_alloc(PBUF_TRANSPORT, sizeof(Sent), PBUF_RAM);
