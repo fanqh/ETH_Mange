@@ -28,6 +28,7 @@
 #include "main.h"
 #include "netconf.h"
 #include <stdio.h>
+#include "eth_mange.h"
 
 /* Private typedef -----------------------------------------------------------*/
 #define LCD_DELAY             3000
@@ -61,6 +62,8 @@ uint8_t	Server = 0;
 extern void client_init(void);
 extern void server_init(void);
 
+device_infor_t Device_Infor;
+
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -87,33 +90,6 @@ void LwIP_Init(void)
   ipaddr.addr = 0;
   netmask.addr = 0;
   gw.addr = 0;
-
-  /* Configure the board opeartin mode: Client/Server */  
-  LCD_DisplayStringLine(Line5, "  Keep Key2 button  ");
-  LCD_DisplayStringLine(Line6, "pressed to activate ");
-  LCD_DisplayStringLine(Line7, "     the Client     ");
-
-//  Delay_ARMJISHU(600*KEY_DELAY);
-  //Delay_ARMJISHU(5000*KEY_DELAY);
-  
-  //if(!STM_EVAL_PBGetState(Button_KEY))
-  {	
-    macaddress[5]=CLIENTMAC6;
-	
-	Server = NOT_SELECTED;	
-	LCD_DisplayStringLine(Line5, "                    ");
-	LCD_DisplayStringLine(Line6, "  Client selected   ");	
-	LCD_DisplayStringLine(Line7, "                    ");
-//	Delay_ARMJISHU(LCD_DELAY);
-  }
-//  else
-//  {
-//        Server = SELECTED;	
-//	LCD_DisplayStringLine(Line5, "                    ");
-//	LCD_DisplayStringLine(Line6, "  Server selected   ");	
-//	LCD_DisplayStringLine(Line7, "                    ");
-//	Delay_ARMJISHU(LCD_DELAY);
-//  }
 
 #else
   IP4_ADDR(&ipaddr, 192, 168, 1, 6);
@@ -240,11 +216,18 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 #if LWIP_DHCP
       if (netif.flags & NETIF_FLAG_DHCP)
       {        
+				
+				Device_Infor.ip_addr = netif.ip_addr;
+				Device_Infor.gw = netif.gw;
+				Device_Infor.netmask = netif.gw;
+				ETH_GetMACAddress(0, Device_Infor.macaddr);
+				Device_Infor.is_connet = 1;
+				
 		/* Display the IP address */
-		LCD_DisplayStringLine(Line7, "IP address assigned ");
+				LCD_DisplayStringLine(Line7, "IP address assigned ");
         LCD_DisplayStringLine(Line8, "  by a DHCP server  ");
         LCD_DisplayStringLine(Line9, iptxt);
-		  Delay_ARMJISHU(800 * KEY_DELAY);
+				Delay_ARMJISHU(800 * KEY_DELAY);
 		/** Start the client/server application: only when a dynamic IP address has been obtained  **/
 
       }
@@ -252,10 +235,9 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 #endif
       {
         /* Display the IP address */
-		LCD_DisplayStringLine(Line8, "  Static IP address   ");
+				LCD_DisplayStringLine(Line8, "  Static IP address   ");
         LCD_DisplayStringLine(Line9, iptxt);	    
-		Delay_ARMJISHU(LCD_DELAY);
-//        Delay_ARMJISHU(11000*KEY_DELAY);
+				Delay_ARMJISHU(LCD_DELAY);
         ETH_GetMACAddress(0, macaddress);
         printf("\n\r Your MAC are configured: %X:%X:%X:%X:%X:%X", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
         printf("\n\r Static IP address: %s", iptxt);
@@ -264,7 +246,7 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 
 	    /* Clear the LCD */	   	
         LCD_Clear(Black);
-	    LCD_SetBackColor(Black);
+				LCD_SetBackColor(Black);
         LCD_SetTextColor(White);		
         LCD_DisplayStringLine(Line8, "  www.armjishu.com  ");
         LCD_DisplayWelcomeStr(Line9);        
@@ -302,34 +284,25 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
         iptab[1] = (uint8_t)(IPaddress >> 16);
         iptab[2] = (uint8_t)(IPaddress >> 8);
         iptab[3] = (uint8_t)(IPaddress);
-	    sprintf((char*)iptxt, "ip: %d.%d.%d.%d ", iptab[3], iptab[2], iptab[1], iptab[0]);		
+				sprintf((char*)iptxt, "ip: %d.%d.%d.%d ", iptab[3], iptab[2], iptab[1], iptab[0]);		
 
         LCD_DisplayWelcomeStr(Line0);
-	    LCD_DisplayStringLine(Line2, iptxt);
+				LCD_DisplayStringLine(Line2, iptxt);
         //Delay_ARMJISHU(11000*KEY_DELAY);
 
         ETH_GetMACAddress(0, macaddress);
         printf("\n\r Your MAC are configured: %X:%X:%X:%X:%X:%X", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
         printf("\n\r Your Ip are configured: %s\n\r", &iptxt[3]);
         
-//	    if(Server)
-	    {
-	      LCD_DisplayStringLine(Line1, "  You are a server  ");
-		 
 		  /* Initialize the server application */
 	      server_init(); 
-	    }
-//	    else
-	    {
-	      LCD_DisplayStringLine(Line1, "  You are a client  ");
-		  
+	      LCD_DisplayStringLine(Line1, "  client and server  ");	  
 		  /* Initialize the client application */
 	      client_init();
-	    }	 
 
         /* Read the new gw address www.armjishu.com */
         IPaddress = netif.gw.addr;
-	    iptab[0] = (uint8_t)(IPaddress >> 24);
+				iptab[0] = (uint8_t)(IPaddress >> 24);
         iptab[1] = (uint8_t)(IPaddress >> 16);
         iptab[2] = (uint8_t)(IPaddress >> 8);
         iptab[3] = (uint8_t)(IPaddress);
@@ -347,7 +320,7 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
     else if (IPaddress == 0)
     {
       /* We still waiting for the DHCP server */
-	  LCD_DisplayStringLine(Line4, "     Looking for    ");
+			LCD_DisplayStringLine(Line4, "     Looking for    ");
       LCD_DisplayStringLine(Line5, "     DHCP server    ");
       LCD_DisplayStringLine(Line6, "     please wait... ");
 
@@ -366,7 +339,7 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
       
       /* If no response from a DHCP server for MAX_DHCP_TRIES times */
 	  /* stop the dhcp client and set a static IP address */
-	  if (netif.dhcp->tries > MAX_DHCP_TRIES)
+			if (netif.dhcp->tries > MAX_DHCP_TRIES)
       {
         struct ip_addr ipaddr;
         struct ip_addr netmask;
