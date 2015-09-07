@@ -29,10 +29,10 @@
 
 
 /* Private typedef -----------------------------------------------------------*/
-#define UDP_SERVER_PORT      8006
-#define UDP_CLIENT_PORT      4
+#define UDP_SERVER_PORT      48899
+#define UDP_CLIENT_PORT      48899
 #define TCP_PORT      4
-//#define UDP_SERVER_IP				192,168,0,104
+//#define UDP_SERVER_IP				192,168,0,103
 #define UDP_SERVER_IP				255,255,255,255
 
 
@@ -109,6 +109,11 @@ void client_init(void)
    * @param port the remote port from which the packet was received
   * @retval None
   */
+
+/*
+* void tcp_err(struct tcp_pcb *pcb, void (* errf)(void *arg, err_t err)) 
+* void tcp_arg(struct tcp_pcb *pcb, void *arg) 
+*/
 void udp_client_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
 {
   struct tcp_pcb *pcb;
@@ -168,6 +173,8 @@ void udp_client_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
   * @param err error value returned by the tcp_connect 
   * @retval error value
   */
+	
+	
 err_t tcp_client_connected(void *arg, struct tcp_pcb *tpcb, err_t err)
 {
   LCD_DisplayStringLine(Line5, "Led control started ");

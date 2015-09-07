@@ -5,10 +5,17 @@
 #include <string.h>
 #include <stdio.h>
 
+#define SMARTSW_UDP_BROADCAST_IP   			255.255.255.255
+#define SMARTSW_UDP_PORT					 			48899
+#define SMARTSW_IP_PORT									8899
+#define DEVICE_LOACAL_UDP_PORT				 	48899
+
+//智能开关的广播指令
+const uint8_t SmartSwBroadcastCmd[] = "YZ-RECOSCAN";
 
 
-const uint8_t SmartSwich[] = "YZ-RECOSCAN";
-
+static void udp_client_SmartSW_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
+static void tcp_SmartSW_errf(void);
 /***********************************************************************
 函数名称：My_IP4_ADDR(void)
 功    能：IP地址的装配
@@ -27,25 +34,25 @@ void SET_IP4_ADDR(struct ip_addr *ipaddr,unsigned char a,unsigned char b,unsigne
   * @param  None
   * @retval None
   */
-		uint8_t Sent[]="fanqh test udp client\r\n";
-void udp_broacast_(void)
+void udp_Broacast_TO_SmartSw(void)
 {
    struct udp_pcb *upcb;
    struct pbuf *p;
+	struct ip_addr ip_udp_server;
 
-   SET_IP4_ADDR(&ip_udp_server, UDP_SERVER_IP);                              
+   SET_IP4_ADDR(&ip_udp_server, SMARTSW_UDP_BROADCAST_IP);                              
    /* Create a new UDP control block  */
    upcb = udp_new();   
    p = pbuf_alloc(PBUF_TRANSPORT, sizeof(Sent), PBUF_RAM);
-	 p->payload = (void*)Sent; 
-	 upcb->local_port = 5;
-	 udp_connect(upcb, &ip_udp_server, UDP_SERVER_PORT);	 
+	 p->payload = (void*)SmartSwBroadcastCmd; 
+	 upcb->local_port = DEVICE_LOACAL_UDP_PORT;
+	 udp_connect(upcb, &ip_udp_server, SMARTSW_UDP_PORT);	 
 	 udp_send(upcb, p); 
 	   /* Reset the upcb */
    udp_disconnect(upcb);
    
    /* Bind the upcb to any IP address and the UDP_PORT port*/
-   udp_bind(upcb, IP_ADDR_ANY, 5);
+   udp_bind(upcb, IP_ADDR_ANY, SMARTSW_UDP_PORT);
 	
 	
    udp_recv(upcb, udp_client_callback, NULL);
@@ -54,4 +61,99 @@ void udp_broacast_(void)
    pbuf_free(p);
   
 }
+
+/**
+  * @brief  This function is called when a datagram is received
+   * @param arg user supplied argument (udp_pcb.recv_arg)
+   * @param upcb the udp_pcb which received data
+   * @param p the packet buffer that was received
+   * @param addr the remote IP address from which the packet was received
+   * @param port the remote port from which the packet was received
+  * @retval None
+  */
+static void udp_client_SmartSW_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
+{
+  struct tcp_pcb *pcb;
+  __IO uint8_t iptab[4];
+  uint8_t iptxt[20];
+	
+  /* Read the Server's IP address */
+  iptab[0] = (uint8_t)((uint32_t)(addr->addr) >> 24);  
+  iptab[1] = (uint8_t)((uint32_t)(addr->addr) >> 16);
+  iptab[2] = (uint8_t)((uint32_t)(addr->addr) >> 8); 
+  iptab[3] = (uint8_t)((uint32_t)(addr->addr));
+  sprintf((char*)iptxt, "is: %d.%d.%d.%d     ", iptab[3], iptab[2], iptab[1], iptab[0]);
+  LCD_DisplayStringLine(Line3, "The server's IP add.");
+  LCD_DisplayStringLine(Line4, iptxt);
+
+  /* Create a new TCP control block  */
+  pcb = tcp_new();
+
+  /* Assign to the new pcb a local IP address and a port number */
+  tcp_bind(pcb, IP_ADDR_ANY, SMARTSW_IP_PORT);
+
+  /* Connect to the server: send the SYN */
+  tcp_connect(pcb, addr, TCP_PORT, tcp_client_connected);
+	tcp_err(pcb, tcp_SmartSW_errf);
+	
+  /* Free the p buffer */
+  pbuf_free(p);
+}
+
+
+static void tcp_SmartSW_errf(void)
+{
+	
+}
+
+/**
+  * @brief  This function is called when a datagram is received
+   * @param arg user supplied argument (udp_pcb.recv_arg)
+   * @param upcb the udp_pcb which received data
+   * @param p the packet buffer that was received
+   * @param addr the remote IP address from which the packet was received
+   * @param port the remote port from which the packet was received
+  * @retval None
+  */
+
+/*
+* void tcp_err(struct tcp_pcb *pcb, void (* errf)(void *arg, err_t err)) 
+* void tcp_arg(struct tcp_pcb *pcb, void *arg) 
+*/
+void udp_client_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
+{
+  struct tcp_pcb *pcb;
+  __IO uint8_t iptab[4];
+  uint8_t iptxt[20];
+	
+  /* Read the Server's IP address */
+  iptab[0] = (uint8_t)((uint32_t)(addr->addr) >> 24);  
+  iptab[1] = (uint8_t)((uint32_t)(addr->addr) >> 16);
+  iptab[2] = (uint8_t)((uint32_t)(addr->addr) >> 8); 
+  iptab[3] = (uint8_t)((uint32_t)(addr->addr));
+
+  sprintf((char*)iptxt, "is: %d.%d.%d.%d     ", iptab[3], iptab[2], iptab[1], iptab[0]);
+	
+  LCD_DisplayStringLine(Line3, "The server's IP add.");
+  LCD_DisplayStringLine(Line4, iptxt);
+
+  /* Create a new TCP control block  */
+  pcb = tcp_new();
+
+  /* Assign to the new pcb a local IP address and a port number */
+  tcp_bind(pcb, IP_ADDR_ANY, TCP_PORT);
+
+  /* Connect to the server: send the SYN */
+  tcp_connect(pcb, addr, TCP_PORT, tcp_client_connected);
+	
+ 
+//    tcp_accept(pcb, APP_accept);  //
+ //   tcp_sent(pcb, App_sent);
+  /* Free the p buffer */
+  pbuf_free(p);
+}
+
+
+
+
 

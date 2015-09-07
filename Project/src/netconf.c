@@ -319,6 +319,9 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
     
     else if (IPaddress == 0)
     {
+			memset(&Device_Infor, 0, sizeof(device_infor_t));
+			
+			
       /* We still waiting for the DHCP server */
 			LCD_DisplayStringLine(Line4, "     Looking for    ");
       LCD_DisplayStringLine(Line5, "     DHCP server    ");
