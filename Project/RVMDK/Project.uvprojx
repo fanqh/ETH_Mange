@@ -478,6 +478,11 @@
               <FileType>1</FileType>
               <FilePath>..\src\usart.c</FilePath>
             </File>
+            <File>
+              <FileName>broadlink.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\broadlink.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -21,7 +21,10 @@ typedef struct
 		uint8_t SN;
 		uint8_t flag1;
 		uint8_t flag2;
-		uint8_t state[8]; //8路开关状态
+		uint8_t sw_state[8]; //8路开关状态
+		uint8_t is_connet;
+		uint8_t retry_connect_count;
+	
 	
 }smart_sw_infor_t;
 

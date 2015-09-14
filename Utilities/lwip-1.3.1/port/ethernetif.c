@@ -331,7 +331,7 @@ ethernetif_init(struct netif *netif)
 
 #if LWIP_NETIF_HOSTNAME
   /* Initialize interface hostname */
-  netif->hostname = "ARMJISHU.COM_lwip";
+  netif->hostname = "fanqh";
 #endif /* LWIP_NETIF_HOSTNAME */
 
   /*

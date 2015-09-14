@@ -340,26 +340,31 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
       
       STM_EVAL_LEDToggle((Led_TypeDef)(LedToggle++));
       
-      /* If no response from a DHCP server for MAX_DHCP_TRIES times */
-	  /* stop the dhcp client and set a static IP address */
-			if (netif.dhcp->tries > MAX_DHCP_TRIES)
-      {
-        struct ip_addr ipaddr;
-        struct ip_addr netmask;
-        struct ip_addr gw;
+//      /* If no response from a DHCP server for MAX_DHCP_TRIES times */
+//	  /* stop the dhcp client and set a static IP address */
+//			if (netif.dhcp->tries > MAX_DHCP_TRIES)
+//      {
+//        struct ip_addr ipaddr;
+//        struct ip_addr netmask;
+//        struct ip_addr gw;
 
-        LCD_DisplayStringLine(Line7, "    DHCP timeout    ");        
+//        LCD_DisplayStringLine(Line7, "    DHCP timeout    ");        
 
-        dhcp_stop(&netif);
+//        dhcp_stop(&netif);
 
-        IP4_ADDR(&ipaddr, 192, 168, 1, 6);
-        IP4_ADDR(&netmask, 255, 255, 255, 0);
-        IP4_ADDR(&gw, 192, 168, 1, 1);
+//        IP4_ADDR(&ipaddr, 192, 168, 1, 6);
+//        IP4_ADDR(&netmask, 255, 255, 255, 0);
+//        IP4_ADDR(&gw, 192, 168, 1, 1);
 
-        netif_set_addr(&netif, &ipaddr , &netmask, &gw);
+//        netif_set_addr(&netif, &ipaddr , &netmask, &gw);
 
-      }
+//      }
     }
+		else
+		{
+			
+		}
+		
 #endif
   } 
 }

@@ -29,14 +29,14 @@
 
 
 /* Private typedef -----------------------------------------------------------*/
-#define UDP_SERVER_PORT      48899
-#define UDP_CLIENT_PORT      48899
+#define UDP_SERVER_PORT      9001
+#define UDP_CLIENT_PORT      9002
 #define TCP_PORT      4
 //#define UDP_SERVER_IP				192,168,0,103
 #define UDP_SERVER_IP				255,255,255,255
 
 
-#define UDP_LOCAL_IP        192,168,0,102                                                                                                                                                                                                                         
+#define UDP_LOCAL_IP        192,168,0,101                                                                                                                                                                                                                        
 
 
 /* Private define ------------------------------------------------------------*/
@@ -72,7 +72,10 @@ void SET_IP4_ADDR(struct ip_addr *ipaddr,unsigned char a,unsigned char b,unsigne
   * @param  None
   * @retval None
   */
-		uint8_t Sent[]="fanqh test udp client\r\n";
+//		uint8_t Sent[]="fanqh test udp client\r\n";
+
+uint8_t Sent[]="fanqh test udp client\r\n";
+uint8_t sm[] = {0xff,0xee,0x11, 0x00,0x00,0x11,0xef,0xfe};
 void client_init(void)
 {
    struct udp_pcb *upcb;
@@ -83,14 +86,16 @@ void client_init(void)
    upcb = udp_new();   
    p = pbuf_alloc(PBUF_TRANSPORT, sizeof(Sent), PBUF_RAM);
 	 p->payload = (void*)Sent; 
-	 upcb->local_port = 5;
+	p->len =sizeof(Sent);
+	p->tot_len = sizeof(Sent);
+	 upcb->local_port = UDP_CLIENT_PORT;
 	 udp_connect(upcb, &ip_udp_server, UDP_SERVER_PORT);	 
 	 udp_send(upcb, p); 
 	   /* Reset the upcb */
    udp_disconnect(upcb);
    
    /* Bind the upcb to any IP address and the UDP_PORT port*/
-   udp_bind(upcb, IP_ADDR_ANY, 5);
+   udp_bind(upcb, IP_ADDR_ANY, UDP_CLIENT_PORT);
 	
 	
    udp_recv(upcb, udp_client_callback, NULL);
@@ -114,11 +119,14 @@ void client_init(void)
 * void tcp_err(struct tcp_pcb *pcb, void (* errf)(void *arg, err_t err)) 
 * void tcp_arg(struct tcp_pcb *pcb, void *arg) 
 */
+uint16_t len1, len2;
+uint8_t rec[256];
 void udp_client_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
 {
   struct tcp_pcb *pcb;
   __IO uint8_t iptab[4];
   uint8_t iptxt[20];
+	
 	
   /* Read the Server's IP address */
   iptab[0] = (uint8_t)((uint32_t)(addr->addr) >> 24);  
@@ -131,6 +139,9 @@ void udp_client_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
   LCD_DisplayStringLine(Line3, "The server's IP add.");
   LCD_DisplayStringLine(Line4, iptxt);
 
+	len1 = p->tot_len;
+	len2 = p->len;
+	memcpy(rec, p->payload, len1);
   /* Create a new TCP control block  */
   pcb = tcp_new();
 
