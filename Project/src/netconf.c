@@ -29,6 +29,7 @@
 #include "netconf.h"
 #include <stdio.h>
 #include "eth_mange.h"
+#include "broadlink.h"
 
 /* Private typedef -----------------------------------------------------------*/
 #define LCD_DELAY             3000
@@ -63,6 +64,7 @@ extern void client_init(void);
 extern void server_init(void);
 
 device_infor_t Device_Infor;
+
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -209,7 +211,6 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
       iptab[1] = (uint8_t)(IPaddress >> 16);
       iptab[2] = (uint8_t)(IPaddress >> 8);
       iptab[3] = (uint8_t)(IPaddress);
-
       sprintf((char*)iptxt, "   %d.%d.%d.%d    ", iptab[3], iptab[2], iptab[1], iptab[0]);
 
       /* Display the new IP address */
@@ -222,28 +223,11 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 				Device_Infor.netmask = netif.gw;
 				ETH_GetMACAddress(0, Device_Infor.macaddr);
 				Device_Infor.is_connet = 1;
-				
-		/* Display the IP address */
-				LCD_DisplayStringLine(Line7, "IP address assigned ");
-        LCD_DisplayStringLine(Line8, "  by a DHCP server  ");
-        LCD_DisplayStringLine(Line9, iptxt);
-				Delay_ARMJISHU(800 * KEY_DELAY);
+				printf(" device is connet and address ip is %s\r\n", iptxt);
 		/** Start the client/server application: only when a dynamic IP address has been obtained  **/
 
       }
-      else
-#endif
-      {
-        /* Display the IP address */
-				LCD_DisplayStringLine(Line8, "  Static IP address   ");
-        LCD_DisplayStringLine(Line9, iptxt);	    
-				Delay_ARMJISHU(LCD_DELAY);
-        ETH_GetMACAddress(0, macaddress);
-        printf("\n\r Your MAC are configured: %X:%X:%X:%X:%X:%X", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
-        printf("\n\r Static IP address: %s", iptxt);
-//        Delay_ARMJISHU(200*KEY_DELAY);
-      }           
-
+#endif          
 	    /* Clear the LCD */	   	
         LCD_Clear(Black);
 				LCD_SetBackColor(Black);
@@ -292,13 +276,13 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 
         ETH_GetMACAddress(0, macaddress);
         printf("\n\r Your MAC are configured: %X:%X:%X:%X:%X:%X", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
-        printf("\n\r Your Ip are configured: %s\n\r", &iptxt[3]);
+        printf("\n\r Your Ip are configured: %s\n\r", iptxt);
         
 		  /* Initialize the server application */
 	      server_init(); 
 	      LCD_DisplayStringLine(Line1, "  client and server  ");	  
 		  /* Initialize the client application */
-	      client_init();
+//	      client_init();
 
         /* Read the new gw address www.armjishu.com */
         IPaddress = netif.gw.addr;
@@ -307,12 +291,8 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
         iptab[2] = (uint8_t)(IPaddress >> 8);
         iptab[3] = (uint8_t)(IPaddress);
         sprintf((char*)iptxt, "gw: %d.%d.%d.%d  ", iptab[3], iptab[2], iptab[1], iptab[0]);
-        printf(" Your gw are configured: %s\n\r", &iptxt[3]);
-        LCD_DisplayStringLine(Line3, iptxt);
-
-        /* »Ö¸´ the new IP address */
-        IPaddress = netif.ip_addr.addr;
-        
+        printf(" Your gw are configured: %s\n\r", iptxt);
+        LCD_DisplayStringLine(Line3, iptxt);        
     }
 
 #if LWIP_DHCP
@@ -340,32 +320,14 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
       
       STM_EVAL_LEDToggle((Led_TypeDef)(LedToggle++));
       
-//      /* If no response from a DHCP server for MAX_DHCP_TRIES times */
-//	  /* stop the dhcp client and set a static IP address */
-//			if (netif.dhcp->tries > MAX_DHCP_TRIES)
-//      {
-//        struct ip_addr ipaddr;
-//        struct ip_addr netmask;
-//        struct ip_addr gw;
-
-//        LCD_DisplayStringLine(Line7, "    DHCP timeout    ");        
-
-//        dhcp_stop(&netif);
-
-//        IP4_ADDR(&ipaddr, 192, 168, 1, 6);
-//        IP4_ADDR(&netmask, 255, 255, 255, 0);
-//        IP4_ADDR(&gw, 192, 168, 1, 1);
-
-//        netif_set_addr(&netif, &ipaddr , &netmask, &gw);
-
-//      }
     }
 		else
 		{
-			
 		}
-		
 #endif
+		if((Device_Infor.is_connet==1)&&(broadlink_infor.is_connect==0))
+			broadlink_broadcast_init();
+		
   } 
 }
 

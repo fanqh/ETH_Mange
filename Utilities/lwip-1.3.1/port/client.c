@@ -85,9 +85,9 @@ void client_init(void)
    /* Create a new UDP control block  */
    upcb = udp_new();   
    p = pbuf_alloc(PBUF_TRANSPORT, sizeof(Sent), PBUF_RAM);
-	 p->payload = (void*)Sent; 
-	p->len =sizeof(Sent);
-	p->tot_len = sizeof(Sent);
+	 p->payload = (void*)sm; 
+	p->len =8;
+	p->tot_len = 8;
 	 upcb->local_port = UDP_CLIENT_PORT;
 	 udp_connect(upcb, &ip_udp_server, UDP_SERVER_PORT);	 
 	 udp_send(upcb, p); 
