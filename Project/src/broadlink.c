@@ -12,8 +12,8 @@
 /* Private typedef -----------------------------------------------------------*/
 #define BROADLINK_PORT      		9001
 #define UDP_CLIENT_PORT      		9002
-#define BROADLINK_IP_ADDR				255,255,255,255
-
+//#define BROADLINK_IP_ADDR				255,255,255,255
+#define BROADLINK_IP_ADDR				192,168,0,100
 
 /* Private functions ---------------------------------------------------------*/
 struct ip_addr broadlink_ip;
@@ -36,15 +36,23 @@ void broadlink_broadcast_init(void)
 	 p->len =8;
 	 p->tot_len = 8;
 	 broadlink_infor.upcb->local_port = UDP_CLIENT_PORT;
-	 udp_connect(broadlink_infor.upcb, &broadlink_ip, BROADLINK_PORT);	 
+	
+	
+	
+	 udp_bind(broadlink_infor.upcb, IP_ADDR_ANY, UDP_CLIENT_PORT);
+	 udp_connect(broadlink_infor.upcb, &broadlink_ip, BROADLINK_PORT);
 	 udp_send(broadlink_infor.upcb, p); 
+	
+	
+//	 udp_connect(broadlink_infor.upcb, &broadlink_ip, BROADLINK_PORT);	 
+//	 udp_send(broadlink_infor.upcb, p); 
 
-   
-   /* Bind the pbroadlink_upcb to any IP address and the UDP_PORT port*/
-   udp_bind(broadlink_infor.upcb, IP_ADDR_ANY, UDP_CLIENT_PORT);
+//      udp_disconnect(broadlink_infor.upcb);
+//   /* Bind the pbroadlink_upcb to any IP address and the UDP_PORT port*/
+//   udp_bind(broadlink_infor.upcb, IP_ADDR_ANY, UDP_CLIENT_PORT);
    udp_recv(broadlink_infor.upcb, broadlink_rec_callback, NULL);
 	   /* Reset the pbroadlink_upcb */
-   udp_disconnect(broadlink_infor.upcb);
+
    /* Free the p buffer */
    pbuf_free(p);
 }
@@ -69,20 +77,20 @@ static void broadlink_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf 
   struct tcp_pcb *pcb;
 	uint8_t rec[256];
 	
-	printf("the broadcast ip: %X", (uint32_t)addr->addr);
-	memcpy(rec, p->payload,p->len);
-	
-	if((rec[0]==0xFF) && (rec[1]==0xEE))
-	{
-		if(broadlink_infor.is_connect!=1)
-		{
-			broadlink_infor.is_connect = 1;
-			broadlink_infor.ip_addr.addr = addr->addr; 
-			broadlink_infor.upcb = upcb;
-		}
-	}
-	else 
-		return;
+	printf("the broadcast ip: %X\r\n", (uint32_t)addr->addr);
+//	memcpy(rec, p->payload,p->len);
+//	
+//	if((rec[0]==0xFF) && (rec[1]==0xEE))
+//	{
+//		if(broadlink_infor.is_connect!=1)
+//		{
+//			broadlink_infor.is_connect = 1;
+//			broadlink_infor.ip_addr.addr = addr->addr; 
+//			broadlink_infor.upcb = upcb;
+//		}
+//	}
+//	else 
+//		return;
   pbuf_free(p);
 }
 

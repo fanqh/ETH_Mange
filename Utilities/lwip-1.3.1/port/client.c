@@ -91,6 +91,10 @@ void client_init(void)
 	 upcb->local_port = UDP_CLIENT_PORT;
 	 udp_connect(upcb, &ip_udp_server, UDP_SERVER_PORT);	 
 	 udp_send(upcb, p); 
+	
+	
+//	udp_sendto(upcb, p,
+//  &ip_udp_server, UDP_SERVER_PORT);
 	   /* Reset the upcb */
    udp_disconnect(upcb);
    
@@ -138,6 +142,7 @@ void udp_client_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 	
   LCD_DisplayStringLine(Line3, "The server's IP add.");
   LCD_DisplayStringLine(Line4, iptxt);
+	printf("udp received\r\n");
 
 	len1 = p->tot_len;
 	len2 = p->len;
