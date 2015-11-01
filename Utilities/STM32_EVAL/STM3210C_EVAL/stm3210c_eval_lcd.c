@@ -669,7 +669,7 @@ void STM3210C_LCD_Init(void)
 {
   LCD_SetFont(&LCD_DEFAULT_FONT);
   /* Setups the LCD */
-  LCD_Setup();
+ // LCD_Setup();
 }
 
 /**

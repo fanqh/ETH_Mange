@@ -176,7 +176,7 @@ static err_t HelloWorld_accept(void *arg, struct tcp_pcb *pcb, err_t err)
   tcp_recv(pcb, HelloWorld_recv);
   
   /* Send out the first message */  
-  tcp_write(pcb, STM32F10x_STR, strlen(STM32F10x_STR), 1); 
+//  tcp_write(pcb, STM32F10x_STR, strlen(STM32F10x_STR), 1); 
   sprintf((char*)iptxt, "您Telnet登录的电脑IP地址为: %d.%d.%d.%d\n", 
                             iptab[3], iptab[2], iptab[1], iptab[0]);
   tcp_write(pcb, iptxt, strlen(iptxt), 1); 

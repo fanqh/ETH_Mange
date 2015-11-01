@@ -25,11 +25,12 @@
 #include "lwip/tcp.h"
 #include <string.h>
 #include <stdio.h>
+#include "netconf.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
-#define UDP_SERVER_PORT    8   /* define the UDP local connection port */
-#define UDP_CLIENT_PORT    4   /* define the UDP remote connection port */
+//#define UDP_SERVER_PORT    8   /* define the UDP local connection port */
+//#define UDP_CLIENT_PORT    4   /* define the UDP remote conne                                                                                        
 #define TCP_PORT    4	/* define the TCP connection port */
 
 /* Private macro -------------------------------------------------------------*/
@@ -55,7 +56,7 @@ void server_init(void)
    
    /* Bind the upcb to the UDP_PORT port */
    /* Using IP_ADDR_ANY allow the upcb to be used by any local interface */
-   udp_bind(upcb, IP_ADDR_ANY, UDP_SERVER_PORT);
+   udp_bind(upcb, IP_ADDR_ANY, MANAGE_UDP_SERVER_PORT);
    
    /* Set a receive callback for the upcb */
    udp_recv(upcb, udp_server_callback, NULL);
@@ -74,25 +75,14 @@ void server_init(void)
 void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
 {
   struct tcp_pcb *pcb;
-  __IO uint8_t iptab[4];
-  uint8_t iptxt[20];
+	uint8_t buff[256];
   
-  /* We have received the UDP Echo from a client */
-  /* read its IP address */
-  iptab[0] = (uint8_t)((uint32_t)(addr->addr) >> 24);
-  iptab[1] = (uint8_t)((uint32_t)(addr->addr) >> 16);
-  iptab[2] = (uint8_t)((uint32_t)(addr->addr) >> 8);
-  iptab[3] = (uint8_t)((uint32_t)(addr->addr));
-
-  sprintf((char*)iptxt, "is: %d.%d.%d.%d     ", iptab[3], iptab[2], iptab[1], iptab[0]);	                           	                             
-	
-  /* Display the client's IP address */
-  /* If there is more than one client connected, the IP address of the last one connected will be displayed */
-  LCD_DisplayStringLine(Line4, "Client's IP address");
-  LCD_DisplayStringLine(Line5, iptxt);
- 
+	memcpy(buff,p->payload,p->len);
+	buff[p->len] = '\n';
+	printf("#>receive client ip addr: %d.%d,%d,%d\r\n", (uint8_t)((uint32_t)(addr->addr)),(uint8_t)((uint32_t)(addr->addr) >> 8), (uint8_t)((uint32_t)(addr->addr) >> 16), (uint8_t)((uint32_t)(addr->addr) >> 24));
+  printf("sever receive: %s\r\n", buff);
   /* Connect to the remote client */
-  udp_connect(upcb, addr, UDP_CLIENT_PORT);
+  udp_connect(upcb, addr, port);
     
   /* Tell the client that we have accepted it */
   udp_send(upcb, p);
@@ -100,41 +90,41 @@ void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
   /* free the UDP connection, so we can accept new clients */
   udp_disconnect(upcb);
 	
-  /* Bind the upcb to IP_ADDR_ANY address and the UDP_PORT port*/
-  /* Be ready to get a new request from another client */  
-  udp_bind(upcb, IP_ADDR_ANY, UDP_SERVER_PORT);
-	
-  /* Set a receive callback for the upcb */
-  udp_recv(upcb, udp_server_callback, NULL);    	
-	
-  /* Create a new TCP control block  */
-  pcb = tcp_new();
-	
-  if(pcb !=NULL)
-  {
-    err_t err;	  
-	      
-    /* Assign to the new pcb a local IP address and a port number */
-    err = tcp_bind(pcb, addr, TCP_PORT);
-	  
-	if(err != ERR_USE)
-	{
-	  /* Set the connection to the LISTEN state */
-      pcb = tcp_listen(pcb);
-    
-      /* Specify the function to be called when a connection is established */
-      tcp_accept(pcb, tcp_server_accept);
-	}
-	else
-	{
-	  /* We enter here if a conection to the addr IP address already exists */
-	  /* so we don't need to establish a new one */
-	  tcp_close(pcb);
-	}            
-  }
+//  /* Bind the upcb to IP_ADDR_ANY address and the UDP_PORT port*/
+//  /* Be ready to get a new request from another client */  
+//  udp_bind(upcb, IP_ADDR_ANY, MANAGE_UDP_SERVER_PORT);
+//	
+//  /* Set a receive callback for the upcb */
+//  udp_recv(upcb, udp_server_callback, NULL);    	
+//	
+//  /* Create a new TCP control block  */
+//  pcb = tcp_new();
+//	
+//  if(pcb !=NULL)
+//  {
+//    err_t err;	  
+//	      
+//    /* Assign to the new pcb a local IP address and a port number */
+//    err = tcp_bind(pcb, addr, TCP_PORT);
+//	  
+//	if(err != ERR_USE)
+//	{
+//	  /* Set the connection to the LISTEN state */
+//      pcb = tcp_listen(pcb);
+//    
+//      /* Specify the function to be called when a connection is established */
+//      tcp_accept(pcb, tcp_server_accept);
+//	}
+//	else
+//	{
+//	  /* We enter here if a conection to the addr IP address already exists */
+//	  /* so we don't need to establish a new one */
+//	  tcp_close(pcb);
+//	}            
+//  }
 
-  /* Free the p buffer */
-  pbuf_free(p);
+//  /* Free the p buffer */
+//  pbuf_free(p);
    
 }
 

@@ -14,11 +14,8 @@
 #include "stm32_eth.h"
 #include "netconf.h"
 #include "main.h"
-#include "helloworld.h"
-#include "helloarmjishu.h"
-#include "httpd.h"
-#include "tftpserver.h"
 #include <stdio.h>
+#include "uart_printf.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -40,8 +37,6 @@ void LCD_Time_Update(uint32_t localtime);
 
 /* Private functions ---------------------------------------------------------*/
 
-void Show_Msg(void);
-
 u16 Show_ETH_PHY(u16 PHYRegAddr);
 
 void Check_ETH_PHY(void);
@@ -59,11 +54,12 @@ void Delay_ARMJISHU(__IO uint32_t nCount)
   */
 int main(void)
 { 
+	uint32_t time;
   /* Setup STM32 system (clocks, Ethernet, GPIO, NVIC) 
         and STM3210C-EVAL resources */
   System_Setup();
              
-  Show_Msg();
+//  Show_Msg();
   //Check_ETH_PHY();
 
   /* Initilaize the LwIP satck */
@@ -71,7 +67,12 @@ int main(void)
   
   /* Infinite loop */
   while (1)
-  {    
+  {  
+		if(LocalTime!=time)
+		{
+			time = LocalTime;
+			uart_ll_print();
+		}
     /* Periodic tasks */
     System_Periodic_Handle();
     //ARMJISHU_TouchScreen();
@@ -149,14 +150,6 @@ void System_Periodic_Handle(void)
   LwIP_Periodic_Handle(LocalTime);
 }
 
-void Show_Msg(void)
-{
-    printf("\r\n\n\n ================ WWW.ARMJISHU.COM  %s configured ==============", EVAL_COM1_STR);
-    printf("\n\r STM32 Connectivity Line Device\n\r");
-    printf("\n\r WebServer;telnet;ping;tftp....\n\r");
-    //printf("\n\r IP address is: 192.168.1.6\n\r");
-}
-
 u16 Show_ETH_PHY(u16 PHYRegAddr)
 {
   u16 PHYRegData;
@@ -177,26 +170,26 @@ void Check_ETH_PHY(void)
     if(Show_ETH_PHY(17) & 0x3000)
     {  
       /* Set Ethernet speed to 10M following the autonegotiation */    
-      printf("\n\r==>ETH_Speed_10M!");
+      printf("==>ETH_Speed_10M!\r\n");
       LCD_DisplayStringLine(Line2, "     ETH_Speed_10M  ");
     }
     else
     {   
       /* Set Ethernet speed to 100M following the autonegotiation */ 
-      printf("\n\r==>ETH_Speed_100M!");     
+      printf("==>ETH_Speed_100M!\n\r");     
       LCD_DisplayStringLine(Line2, "     ETH_Speed_100M ");
     } 
     /* Configure the MAC with the Duplex Mode fixed by the autonegotiation process */
     if((Show_ETH_PHY(17) & 0xA000) != (uint32_t)RESET)
     {
       /* Set Ethernet duplex mode to FullDuplex following the autonegotiation */
-      printf("\n\r==>ETH_Mode_FullDuplex!");
+      printf("==>ETH_Mode_FullDuplex!\n\r");
       LCD_DisplayStringLine(Line3, " ETH_Mode_FullDuplex");
     }
     else
     {
       /* Set Ethernet duplex mode to HalfDuplex following the autonegotiation */
-      printf("\n\r==>ETH_Mode_HalfDuplex!");
+      printf("==>ETH_Mode_HalfDuplex!\n\r");
       LCD_DisplayStringLine(Line3, " ETH_Mode_HalfDuplex");
     }
 }

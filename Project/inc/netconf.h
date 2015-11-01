@@ -22,10 +22,13 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __NETCONF_H
 #define __NETCONF_H
+#include "stm32f10x.h"
 
 #ifdef __cplusplus
  extern "C" {
 #endif
+	 
+#define MANAGE_UDP_SERVER_PORT  9009
 
 /* Includes ------------------------------------------------------------------*/
 void LwIP_Init(void);

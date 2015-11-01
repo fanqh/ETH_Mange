@@ -28,8 +28,10 @@
 #include "main.h"
 #include "netconf.h"
 #include <stdio.h>
+#include <string.h>
 #include "eth_mange.h"
 #include "broadlink.h"
+#include "stm32_eth.h"
 
 /* Private typedef -----------------------------------------------------------*/
 #define LCD_DELAY             3000
@@ -189,12 +191,10 @@ extern void ETH_GetMACAddress(uint32_t MacAddr, uint8_t *Addr);
   * @param  localtime: the current LocalTime value
   * @retval None
   */
+uint32_t time1;
 void Display_Periodic_Handle(__IO uint32_t localtime)
 { 
   uint8_t macaddress[6]; 
-  u16 PHYRegData;
-	uint32_t time;
-	
 	
 		/* 250 ms */
   if (localtime - DisplayTimer >= LCD_TIMER_MSECS)
@@ -204,18 +204,8 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
     /* We have got a new IP address so update the display */
     if (IPaddress != netif.ip_addr.addr)
     {
-      __IO uint8_t iptab[4];
-      uint8_t iptxt[20];
-
       /* Read the new IP address */
-      IPaddress = netif.ip_addr.addr;
-
-      iptab[0] = (uint8_t)(IPaddress >> 24);
-      iptab[1] = (uint8_t)(IPaddress >> 16);
-      iptab[2] = (uint8_t)(IPaddress >> 8);
-      iptab[3] = (uint8_t)(IPaddress);
-      sprintf((char*)iptxt, "   %d.%d.%d.%d    ", iptab[3], iptab[2], iptab[1], iptab[0]);
-
+      IPaddress = netif.ip_addr.addr;					
       /* Display the new IP address */
 #if LWIP_DHCP
       if (netif.flags & NETIF_FLAG_DHCP)
@@ -226,102 +216,30 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 				Device_Infor.netmask = netif.gw;
 				ETH_GetMACAddress(0, Device_Infor.macaddr);
 				Device_Infor.is_connet = 1;
-				printf(" device is connet and address ip is %s\r\n", iptxt);
-		/** Start the client/server application: only when a dynamic IP address has been obtained  **/
+				/** Start the client/server application: only when a dynamic IP address has been obtained  **/
 
       }
 #endif          
-	    /* Clear the LCD */	   	
-        LCD_Clear(Black);
-				LCD_SetBackColor(Black);
-        LCD_SetTextColor(White);		
-        LCD_DisplayStringLine(Line8, "  www.armjishu.com  ");
-        LCD_DisplayWelcomeStr(Line9);        
-
-//        /* www.armjishu.com LCDÏÔÊ¾Íø¿Ú×´Ì¬ */
-//        PHYRegData = ETH_ReadPHYRegister(0,17);
-//        if(PHYRegData & 0x3000)
-//        {  
-//          /* Set Ethernet speed to 10M following the autonegotiation */    
-//          printf("\n\r==>ETH_Speed_10M!");
-//          LCD_DisplayStringLine(Line5, "   ETH_Speed_10M    ");
-//        }
-//        else
-//        {   
-//          /* Set Ethernet speed to 100M following the autonegotiation */ 
-//          printf("\n\r==>ETH_Speed_100M!");     
-//          LCD_DisplayStringLine(Line5, "   ETH_Speed_100M   ");
-//        } 
-//        /* Configure the MAC with the Duplex Mode fixed by the autonegotiation process */
-//        if((PHYRegData & 0xA000) != (uint32_t)RESET)
-//        {
-//          /* Set Ethernet duplex mode to FullDuplex following the autonegotiation */
-//          printf("\n\r==>ETH_Mode_FullDuplex!");
-//          LCD_DisplayStringLine(Line6, " ETH_Mode_FullDuplex");
-//        }
-//        else
-//        {
-//          /* Set Ethernet duplex mode to HalfDuplex following the autonegotiation */
-//          printf("\n\r==>ETH_Mode_HalfDuplex!");
-//          LCD_DisplayStringLine(Line6, " ETH_Mode_HalfDuplex");
-//        }
-        
-        	   
-//        iptab[0] = (uint8_t)(IPaddress >> 24);
-//        iptab[1] = (uint8_t)(IPaddress >> 16);
-//        iptab[2] = (uint8_t)(IPaddress >> 8);
-//        iptab[3] = (uint8_t)(IPaddress);
-//				sprintf((char*)iptxt, "ip: %d.%d.%d.%d ", iptab[3], iptab[2], iptab[1], iptab[0]);		
-
-//        LCD_DisplayWelcomeStr(Line0);
-//				LCD_DisplayStringLine(Line2, iptxt);
-//        //Delay_ARMJISHU(11000*KEY_DELAY);
-
-//        ETH_GetMACAddress(0, macaddress);
-//        printf("\n\r Your MAC are configured: %X:%X:%X:%X:%X:%X", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
-//        printf("\n\r Your Ip are configured: %s\n\r", iptxt);
+        ETH_GetMACAddress(0, macaddress);
+        printf("=>Your MAC are configured: %X:%X:%X:%X:%X:%X\r\n", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
+				printf("=>Your ip are configured: %d,%d,%d,%d\r\n",(uint8_t)(IPaddress), (uint8_t)(IPaddress >> 8), (uint8_t)(IPaddress >> 16), (uint8_t)(IPaddress >> 24));
+				printf("=>Your gw are configured: %d,%d,%d,%d\r\n",(uint8_t)(netif.gw.addr), (uint8_t)(netif.gw.addr >> 8), (uint8_t)(netif.gw.addr >> 16), (uint8_t)(netif.gw.addr >> 24));
 //        
 //		  /* Initialize the server application */
-//	      server_init(); 
+  	      server_init(); 
 //	      LCD_DisplayStringLine(Line1, "  client and server  ");	  
 //		  /* Initialize the client application */
-  	      client_init();
-
-//        /* Read the new gw address www.armjishu.com */
-//        IPaddress = netif.gw.addr;
-//				iptab[0] = (uint8_t)(IPaddress >> 24);
-//        iptab[1] = (uint8_t)(IPaddress >> 16);
-//        iptab[2] = (uint8_t)(IPaddress >> 8);
-//        iptab[3] = (uint8_t)(IPaddress);
-//        sprintf((char*)iptxt, "gw: %d.%d.%d.%d  ", iptab[3], iptab[2], iptab[1], iptab[0]);
-//        printf(" Your gw are configured: %s\n\r", iptxt);
-//        LCD_DisplayStringLine(Line3, iptxt);        
+  	      client_init();   
     }
 
 #if LWIP_DHCP
     
     else if (IPaddress == 0)
     {
-			memset(&Device_Infor, 0, sizeof(device_infor_t));
-			
-			
-      /* We still waiting for the DHCP server */
-			LCD_DisplayStringLine(Line4, "     Looking for    ");
-      LCD_DisplayStringLine(Line5, "     DHCP server    ");
-      LCD_DisplayStringLine(Line6, "     please wait... ");
-
-      LedToggle &= 3;
-
-      if(LedToggle ==0)
-      LCD_DisplayWelcomeStr(Line7); 
-      else if(LedToggle ==1)
-      LCD_DisplayStringLine(Line7, "  ***************** ");
-      else if(LedToggle ==2)
-      LCD_DisplayStringLine(Line7, "  %%%%%%%%%%%%%%%%% ");
-      else if(LedToggle ==3)
-      LCD_DisplayStringLine(Line7, "  ################# ");
-      
-      STM_EVAL_LEDToggle((Led_TypeDef)(LedToggle++));
+//			memset(&Device_Infor, 0, sizeof(device_infor_t));
+      if((LedToggle&3) ==0)
+				printf("=>Looking for DHCP server connectting......\r\n");
+			LedToggle++;
       
     }
 		else

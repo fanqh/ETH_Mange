@@ -9,7 +9,7 @@
   *****************************************************************************/
 
 /* Includes ------------------------------------------------------------------*/
-
+#include <stdint.h>
 #ifndef EVAL_COM1_STR
   #ifdef STM32F10X_CL
     #define EVAL_COM1_STR                    "USART2"
@@ -20,6 +20,13 @@
 
 /* Constants used by Serial Command Line Mode */
 #define CMD_STRING_SIZE       128
+
+
+
+
+
+
+
 
 
 void USART_COM1_Init(void);

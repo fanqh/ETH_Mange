@@ -22,15 +22,15 @@
   * @{
   */ 
 
-const uint8_t STM32F10x_STR[] = {"\r\n"\
-           "  _____ _______ __  __ ____ ___  ______ __  ___\r\n"\
-           " / ____|__   __|  \\/  |___ \\__ \\|  ____/_ |/ _ \\\r\n"\
-           "| (___    | |  | \\  / | __) | ) | |__   | | | | |_  __\r\n"\
-           " \\___ \\   | |  | |\\/| ||__ < / /|  __|  | | | | \\ \\/ /\r\n"\
-           " ____) |  | |  | |  | |___) / /_| |     | | |_| |>  <\r\n"\
-           "|_____/   |_|  |_|  |_|____/____|_|     |_|\\___//_/\\_\\"\
-           "神舟系列开发板\r\n"\
-           "\r\n"};
+//const uint8_t STM32F10x_STR[] = {"\r\n"\
+//           "  _____ _______ __  __ ____ ___  ______ __  ___\r\n"\
+//           " / ____|__   __|  \\/  |___ \\__ \\|  ____/_ |/ _ \\\r\n"\
+//           "| (___    | |  | \\  / | __) | ) | |__   | | | | |_  __\r\n"\
+//           " \\___ \\   | |  | |\\/| ||__ < / /|  __|  | | | | \\ \\/ /\r\n"\
+//           " ____) |  | |  | |  | |___) / /_| |     | | |_| |>  <\r\n"\
+//           "|_____/   |_|  |_|  |_|____/____|_|     |_|\\___//_/\\_\\"\
+//           "神舟系列开发板\r\n"\
+//           "\r\n"};
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -40,13 +40,13 @@ USART_InitTypeDef USART_InitStructure;
 
 /* Private function prototypes -----------------------------------------------*/
 
-#ifdef __GNUC__
-  /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
-     set to 'Yes') calls __io_putchar() */
-  #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-#else
-  #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */
+//#ifdef __GNUC__
+//  /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
+//     set to 'Yes') calls __io_putchar() */
+//  #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+//#else
+//  #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+//#endif /* __GNUC__ */
   
 /* Private functions ---------------------------------------------------------*/
 void USART_COM1_Init(void)
@@ -74,27 +74,6 @@ void USART_COM1_Init(void)
   USART_InitStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
 
   STM_EVAL_COMInit(COM1, &USART_InitStructure);
-
-  /* Output a message on Hyperterminal using printf function */
-  //printf("\n\n\n\rUSART Printf Example: retarget the C library printf function to the USART\n\r");
-  printf("\r\n\n\n\r WWW.ARMJISHU.COM  %s configured....", EVAL_COM1_STR);
-  printf("\n\r ############ WWW.ARMJISHU.COM! ############ ("__DATE__ " - " __TIME__ ")");
-
-  printf("%s", STM32F10x_STR);
-
-  printf("\n\r WWW.ARMJISHU.COM use __STM32F10X_STDPERIPH_VERSION %d.%d.%d",
-			__STM32F10X_STDPERIPH_VERSION_MAIN,
-			__STM32F10X_STDPERIPH_VERSION_SUB1,
-			__STM32F10X_STDPERIPH_VERSION_SUB2);
-  printf("\n\r 产品内部Flash大小为：%dK字节！ \t www.armjishu.com",
-            *(__IO uint16_t*)(0x1FFFF7E0));
-#if(__STM32F10X_STDPERIPH_VERSION >= 0x00030300)
-  printf("\n\r 系统内核时钟频率(SystemCoreClock)为：%dHz.\n\r",
-            SystemCoreClock);
-#else
-  printf("\n\r 系统内核时钟频率(SystemCoreClock)为：%dHz.\n\r",
-            SystemFrequency);
-#endif
   
 }
 
@@ -192,23 +171,6 @@ uint8_t USART_Put_Char(uint8_t ch)
   return ch;
 }
 
-/**
-  * @brief  Retargets the C library printf function to the USART.
-  * @param  None
-  * @retval None
-  */
-PUTCHAR_PROTOTYPE
-{
-  /* Place your implementation of fputc here */
-  /* Loop until the end of transmission */
-  while (USART_GetFlagStatus(EVAL_COM1, USART_FLAG_TC) == RESET)
-  {}
-  
-  /* write a character to the USART */
-  USART_SendData(EVAL_COM1, (uint8_t) ch);
-
-  return ch;
-}
 
 #ifdef  USE_FULL_ASSERT
 

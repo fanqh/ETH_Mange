@@ -429,7 +429,10 @@ void STM_EVAL_COMInit(COM_TypeDef COM, USART_InitTypeDef* USART_InitStruct)
     /* Enable the USART1 Pins */
     RCC_APB2PeriphClockCmd(COM_USART_CLK[COM], ENABLE);
   }
-
+	NVIC_EnableIRQ(USART2_IRQn);
+	NVIC_SetPriority (USART2_IRQn, (3<<__NVIC_PRIO_BITS) - 1);
+	
+	USART_ITConfig(USART2, USART_IT_TC, ENABLE);
   /* Configure USART Tx as alternate function push-pull */
   GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
   GPIO_InitStructure.GPIO_Pin = COM_TX_PIN[COM];
@@ -447,6 +450,7 @@ void STM_EVAL_COMInit(COM_TypeDef COM, USART_InitTypeDef* USART_InitStruct)
   /* Enable USART */
   USART_Cmd(COM_USART[COM], ENABLE);
 }
+
 
 
 /**

@@ -24,6 +24,7 @@
 #include "stm32f10x_it.h"
 #include "stm32_eth.h"
 #include "main.h"
+#include "uart_printf.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -155,6 +156,16 @@ void ETH_IRQHandler(void)
   /* Clear the Eth DMA Rx IT pending bits */
   ETH_DMAClearITPendingBit(ETH_DMA_IT_R);
   ETH_DMAClearITPendingBit(ETH_DMA_IT_NIS);
+}
+
+void USART2_IRQHandler(void)
+{
+	if(USART_GetITStatus(USART2, USART_IT_TC)==SET)
+	{
+		USART_ClearITPendingBit(USART2, USART_IT_TC);
+		printing = 0;
+		uart_print_tx_complete_cb();
+	}
 }
 
 

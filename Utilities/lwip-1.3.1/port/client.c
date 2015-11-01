@@ -89,14 +89,14 @@ void client_init(void)
 	p->len =8;
 	p->tot_len = 8;
 	 upcb->local_port = UDP_CLIENT_PORT;
-	 udp_connect(upcb, &ip_udp_server, UDP_SERVER_PORT);	 
-	 udp_send(upcb, p); 
+//	 udp_connect(upcb, &ip_udp_server, UDP_SERVER_PORT);	 
+//	 udp_send(upcb, p); 
 	
-	
-//	udp_sendto(upcb, p,
-//  &ip_udp_server, UDP_SERVER_PORT);
+	printf("=>send udp a package\r\n");
+	udp_sendto(upcb, p,
+  &ip_udp_server, UDP_SERVER_PORT);
 	   /* Reset the upcb */
-   udp_disconnect(upcb);
+//   udp_disconnect(upcb);
    
    /* Bind the upcb to any IP address and the UDP_PORT port*/
    udp_bind(upcb, IP_ADDR_ANY, UDP_CLIENT_PORT);
@@ -142,11 +142,12 @@ void udp_client_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 	
   LCD_DisplayStringLine(Line3, "The server's IP add.");
   LCD_DisplayStringLine(Line4, iptxt);
-	printf("udp received\r\n");
+//	printf("udp received\r\n");
 
 	len1 = p->tot_len;
 	len2 = p->len;
 	memcpy(rec, p->payload, len1);
+	rec[len1] = '\0';
   /* Create a new TCP control block  */
   pcb = tcp_new();
 
@@ -155,6 +156,7 @@ void udp_client_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 
   /* Connect to the server: send the SYN */
   tcp_connect(pcb, addr, TCP_PORT, tcp_client_connected);
+	printf("receive: %s\r\n", rec);
 	
  
 //    tcp_accept(pcb, APP_accept);  //

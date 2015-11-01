@@ -323,13 +323,13 @@ uint32_t ETH_Init(ETH_InitTypeDef* ETH_InitStruct, uint16_t PHYAddress)
     {
       /* Set Ethernet duplex mode to FullDuplex following the autonegotiation */
       ETH_InitStruct->ETH_Mode = ETH_Mode_FullDuplex;
-      printf("\n\r ETH_Mode     ETH_Mode_FullDuplex \n\r ");
+      printf("ETH_Mode     ETH_Mode_FullDuplex \n\r ");
     }
     else
     {
       /* Set Ethernet duplex mode to HalfDuplex following the autonegotiation */
       ETH_InitStruct->ETH_Mode = ETH_Mode_HalfDuplex;   
-       printf("\n\r ETH_Mode     ETH_Mode_HalfDuplex \n\r ");
+       printf("\n\r ETH_Mode     ETH_Mode_HalfDuplex\n\r ");
     }
     /* Configure the MAC with the speed fixed by the autonegotiation process */
     if(RegValue & PHY_Speed_Status)
@@ -342,7 +342,7 @@ uint32_t ETH_Init(ETH_InitTypeDef* ETH_InitStruct, uint16_t PHYAddress)
     {   
       /* Set Ethernet speed to 100M following the autonegotiation */ 
       ETH_InitStruct->ETH_Speed = ETH_Speed_100M; 
-      printf("\n\r ETH_Speed     ETH_Speed_100M \n\r ");
+      printf("ETH_Speed     ETH_Speed_100M\n\r ");
     }    
   }
   else

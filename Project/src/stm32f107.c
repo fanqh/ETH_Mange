@@ -117,10 +117,12 @@ void System_Setup(void)
   STM_EVAL_BEEPOff();
 
   /* Initialize the STM3210C-EVAL's LCD */
-  STM3210C_LCD_Init();
+STM3210C_LCD_Init();
 
   STM_EVAL_BEEPOff();
-      
+	
+#if LCD
+        
   /* Clear the LCD */
   LCD_Clear(Blue);
 
@@ -131,6 +133,7 @@ void System_Setup(void)
   LCD_SetTextColor(White);
   
   ADS7843_Init();
+#endif
   
   /* RTC TEST */
   //RTC_Test();
