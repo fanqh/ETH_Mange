@@ -5,15 +5,7 @@
 #include "stm32f10x.h"
 
 
-typedef struct
-{
-	struct ip_addr ip_addr;
-  struct ip_addr netmask;
-  struct ip_addr gw;
-	uint8_t macaddr[6];
-	uint8_t is_connet;
-	
-}device_infor_t; 
+
 typedef struct
 {
 		uint32_t ip_addr;

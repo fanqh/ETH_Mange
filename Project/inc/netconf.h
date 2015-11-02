@@ -23,13 +23,26 @@
 #ifndef __NETCONF_H
 #define __NETCONF_H
 #include "stm32f10x.h"
+#include "netif.h"
 
 #ifdef __cplusplus
  extern "C" {
 #endif
 	 
-#define MANAGE_UDP_SERVER_PORT  9009
+#define MANAGE_UDP_SERVER_PORT  9009	 
 
+	 
+typedef struct
+{
+	struct ip_addr ip_addr;
+  struct ip_addr netmask;
+  struct ip_addr gw;
+	uint8_t macaddr[6];
+	uint8_t is_connet;
+	
+}device_infor_t; 	 
+
+extern device_infor_t Device_Infor;
 /* Includes ------------------------------------------------------------------*/
 void LwIP_Init(void);
 void LwIP_Pkt_Handle(void);

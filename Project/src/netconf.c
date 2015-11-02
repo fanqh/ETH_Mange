@@ -191,7 +191,7 @@ extern void ETH_GetMACAddress(uint32_t MacAddr, uint8_t *Addr);
   * @param  localtime: the current LocalTime value
   * @retval None
   */
-uint32_t time1;
+uint8_t flag_server=0;
 void Display_Periodic_Handle(__IO uint32_t localtime)
 { 
   uint8_t macaddress[6]; 
@@ -223,11 +223,13 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
         ETH_GetMACAddress(0, macaddress);
         printf("=>Your MAC are configured: %X:%X:%X:%X:%X:%X\r\n", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
 				printf("=>Your ip are configured: %d,%d,%d,%d\r\n",(uint8_t)(IPaddress), (uint8_t)(IPaddress >> 8), (uint8_t)(IPaddress >> 16), (uint8_t)(IPaddress >> 24));
-				printf("=>Your gw are configured: %d,%d,%d,%d\r\n",(uint8_t)(netif.gw.addr), (uint8_t)(netif.gw.addr >> 8), (uint8_t)(netif.gw.addr >> 16), (uint8_t)(netif.gw.addr >> 24));
-//        
+				printf("=>Your gw are configured: %d,%d,%d,%d\r\n",(uint8_t)(netif.gw.addr), (uint8_t)(netif.gw.addr >> 8), (uint8_t)(netif.gw.addr >> 16), (uint8_t)(netif.gw.addr >> 24));    
 //		  /* Initialize the server application */
-  	      server_init(); 
-//	      LCD_DisplayStringLine(Line1, "  client and server  ");	  
+				if(flag_server==0)
+  	    {
+					flag_server = 1;
+					server_init();
+				}
 //		  /* Initialize the client application */
   	      client_init();   
     }
@@ -253,6 +255,11 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 //		}
 		
   } 
+}
+
+ip_addr addr_asii_to_hex(uint8_t *addr)
+{
+	
 }
 
 /******************* (C) COPYRIGHT 2009 STMicroelectronics *****END OF FILE****/
