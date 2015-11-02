@@ -257,9 +257,4 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
   } 
 }
 
-ip_addr addr_asii_to_hex(uint8_t *addr)
-{
-	
-}
-
 /******************* (C) COPYRIGHT 2009 STMicroelectronics *****END OF FILE****/

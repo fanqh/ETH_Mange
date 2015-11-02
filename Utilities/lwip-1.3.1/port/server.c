@@ -33,6 +33,16 @@
 //#define UDP_CLIENT_PORT    4   /* define the UDP remote conne                                                                                        
 #define TCP_PORT    4	/* define the TCP connection port */
 const char FindCMD[]="action:find,device:";
+const char maccmd[] = "mac:";
+const char ipcmd[]="IP:";
+const char FindCMDResp[] = {'c','m','d',':',0,0,0,0,0,0,'I','P',':',0,0,0,0};
+struct FindCMDResp_t
+{
+	char maccmd[4];
+	uint8_t macaddr[6];
+	char ipcmd[3];
+	struct ip_addr local_ip;
+}find_resp;
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -52,13 +62,11 @@ void server_init(void)
 {
    struct udp_pcb *upcb;                                 
    
-   /* Create a new UDP control block  */
    upcb = udp_new();
-   /* Bind the upcb to the UDP_PORT port */
-   /* Using IP_ADDR_ANY allow the upcb to be used by any local interface */
-   udp_bind(upcb, IP_ADDR_ANY, MANAGE_UDP_SERVER_PORT); 
-   /* Set a receive callback for the upcb */
-   udp_recv(upcb, udp_server_callback, NULL);  
+   if(udp_bind(upcb, IP_ADDR_ANY, MANAGE_UDP_SERVER_PORT)==ERR_OK)
+			udp_recv(upcb, udp_server_callback, NULL);  
+	 else
+		 printf("[server]: add and port is used\r\n");
 }
 
 /**
@@ -75,27 +83,49 @@ void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 	uint8_t buff[256];
 	uint8_t *ptr,*pGW;
 	struct ip_addr remote_gw;
+	
   
+	if(p->len>256)
+		return;
 	memcpy(buff,p->payload,p->len);
 	buff[p->len] = '\0';
-	printf("\r\n>> receive client ip addr: %d.%d,%d,%d\r\n\
+	printf("\r\n[server]: receive client ip addr: %d.%d,%d,%d\r\n\
 	port: %d\r\n", (uint8_t)((uint32_t)(addr->addr)),(uint8_t)((uint32_t)(addr->addr) >> 8), (uint8_t)((uint32_t)(addr->addr) >> 16), (uint8_t)((uint32_t)(addr->addr) >> 24),port);
-  printf(">> sever receive: %s\r\n", buff);
+  printf("[server]: sever receive: %s\r\n", buff);
 	
 	
 	ptr = (uint8_t*)strstr((char*)buff, FindCMD);
 	if(ptr)
 	{
+		printf("[server]: RemoteGw: %s\r\n",ptr+sizeof(FindCMD)-1); 
 		pGW = ptr+sizeof(FindCMD)-1;
-		remote_gw.addr = (*pGW&0xff) | ((((uint8_t)(*(pGW+2)))&0xff)<<8) | ((((uint8_t)(*(pGW+4)))&0xff)<<16) | ((((uint8_t)(*(pGW+4)))&0xff)<<24);
+		remote_gw.addr = inet_addr(pGW);
 		if(remote_gw.addr == Device_Infor.gw.addr)
-			printf(">> remote gw: %s\r\n",ptr+sizeof(FindCMD)-1);
-	}
+		{
+			struct pbuf *pudpSend;
+			
+			strcat(find_resp.maccmd, "mac:");
+			strcat(find_resp.ipcmd,"IP:");
+			find_resp.local_ip = Device_Infor.ip_addr;
+			memcpy(find_resp.macaddr , Device_Infor.macaddr, 6);
 		
-
-  udp_connect(upcb, addr, port);
-  udp_send(upcb, p);
-  udp_disconnect(upcb);
+			pudpSend = pbuf_alloc(PBUF_TRANSPORT, 64, PBUF_RAM);
+			pudpSend->payload = (uint8_t*)&find_resp;
+			pudpSend->tot_len = pudpSend->len = sizeof(struct FindCMDResp_t);
+			upcb->local_port = MANAGE_UDP_SERVER_PORT;
+			
+			udp_connect(upcb, addr, port);
+			udp_send(upcb, pudpSend);
+			udp_disconnect(upcb);
+		
+//			pbuf_free(pudpSend);
+//			udp_bind(upcb, IP_ADDR_ANY, MANAGE_UDP_SERVER_PORT); 
+//			udp_recv(upcb, udp_server_callback, NULL);  
+			
+		}
+			
+	}
+  pbuf_free(p);
    
 }
 
