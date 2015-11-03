@@ -24,42 +24,78 @@ broadlink_infor_t broadlink_infor;
 
 static void broadlink_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
 extern void SET_IP4_ADDR(struct ip_addr *ipaddr,unsigned char a,unsigned char b,unsigned char c,unsigned char d);
+
 void broadlink_broadcast_init(void)
 {
-   struct pbuf *p;
+   
 
    SET_IP4_ADDR(&broadlink_ip, BROADLINK_IP_ADDR);                              
    /* Create a new UDP control block  */
    broadlink_infor.upcb = udp_new();   
-   p = pbuf_alloc(PBUF_TRANSPORT, sizeof(sm), PBUF_RAM);
+   p = pbuf_alloc(PBUF_TRANSPORT, 64, PBUF_RAM);
 	 p->payload = (void*)sm; 
 	 p->len =8;
 	 p->tot_len = 8;
 	 broadlink_infor.upcb->local_port = UDP_CLIENT_PORT;
 	
-	
-	
 	 udp_bind(broadlink_infor.upcb, IP_ADDR_ANY, UDP_CLIENT_PORT);
 	 udp_connect(broadlink_infor.upcb, &broadlink_ip, BROADLINK_PORT);
 	 udp_send(broadlink_infor.upcb, p); 
-	
-	
-//	 udp_connect(broadlink_infor.upcb, &broadlink_ip, BROADLINK_PORT);	 
-//	 udp_send(broadlink_infor.upcb, p); 
-
-//      udp_disconnect(broadlink_infor.upcb);
-//   /* Bind the pbroadlink_upcb to any IP address and the UDP_PORT port*/
-//   udp_bind(broadlink_infor.upcb, IP_ADDR_ANY, UDP_CLIENT_PORT);
+	 udp_disconnect(broadlink_infor.upcb);
    udp_recv(broadlink_infor.upcb, broadlink_rec_callback, NULL);
 	   /* Reset the pbroadlink_upcb */
-
    /* Free the p buffer */
    pbuf_free(p);
 }
 
+
+err_t Broadlink_Send(uint8_t *p, uint16 len)
+{
+	
+}
+
+err_t Broadlink_Broadcast(uint8_t *passwd)
+{		
+		err_t ret = ERR_OK;
+		struct pbuf *p;
+		uint8_t BrocastBuff[8] = {0xff,0xee,0x11, 0x00,0x00,0x11,0xef,0xfe};
+																
+		udp_pcb *upcb = udp_new(); 
+		if(upcb==NULL)
+			return ERR_BUF;
+		
+		p = pbuf_alloc(PBUF_TRANSPORT, 64, PBUF_RAM);
+		if(p==NULL)
+			return ERR_BUF;
+		
+		BrocastBuff[5] = 0x11+*passwd+*(passwd+1);
+		SET_IP4_ADDR(&broadlink_ip, BROADLINK_IP_ADDR); 
+		
+		p->payload = (void*)BrocastBuff; 
+		p->len =8;
+		p->tot_len = 8;
+		broadlink_infor.upcb->local_port = UDP_CLIENT_PORT;
+
+		ret = udp_bind(upcb, IP_ADDR_ANY, UDP_CLIENT_PORT);
+		if(ret!=ERR_OK)
+			return ret;
+		udp_connect(upcb, &broadlink_ip, BROADLINK_PORT);
+		ret = udp_send(upcb, p); 
+		if(ret!= ERR_OK)
+			return ret;
+		udp_disconnect(upcb);
+		udp_recv(broadlink_infor.upcb, broadlink_rec_callback, NULL);
+		 /* Reset the pbroadlink_upcb */
+		/* Free the p buffer */
+		pbuf_free(p);	
+		
+		return ret;
+}
+
+
 void udp_diconnect(broadlink_infor_t *pDevice_Infor)
 {
-		udp_disconnect(pDevice_Infor->upcb);
+		
 		pDevice_Infor->is_connect = 0;
 }
 

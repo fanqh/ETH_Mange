@@ -89,14 +89,12 @@ void client_init(void)
 	p->len =8;
 	p->tot_len = 8;
 	 upcb->local_port = UDP_CLIENT_PORT;
-//	 udp_connect(upcb, &ip_udp_server, UDP_SERVER_PORT);	 
-//	 udp_send(upcb, p); 
+	 udp_connect(upcb, &ip_udp_server, UDP_SERVER_PORT);	 
+	 udp_send(upcb, p); 
 	
 	printf("=>send udp a package\r\n");
-	udp_sendto(upcb, p,
-  &ip_udp_server, UDP_SERVER_PORT);
 	   /* Reset the upcb */
-//   udp_disconnect(upcb);
+   udp_disconnect(upcb);
    
    /* Bind the upcb to any IP address and the UDP_PORT port*/
    udp_bind(upcb, IP_ADDR_ANY, UDP_CLIENT_PORT);
