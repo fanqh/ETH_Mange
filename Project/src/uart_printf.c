@@ -41,6 +41,7 @@ uint8_t uart_send(uint8_t *p, uint32_t len)
 			printing = 1;
 			/* write a character to the USART */
 			USART_SendData(EVAL_COM1, *p);
+			printing=0;
 			++p;
 		}
 		
@@ -76,7 +77,8 @@ void uart_print(void)
 			else
 			{
 				printing=1;
-				USART_SendData(EVAL_COM1,print_buffer[out]);
+				USART_Put_Char(print_buffer[out]);
+				printing=0;
 				out++;
 				if(out>=PRINT_BUFFER_SIZE)
 					out = 0;
@@ -92,7 +94,8 @@ void uart_print(void)
 			else
 			{
 				printing=1;
-				USART_SendData(EVAL_COM1,print_buffer[out]);
+				USART_Put_Char(print_buffer[out]);
+				printing=0;
 				out++;					
 			}
 		}

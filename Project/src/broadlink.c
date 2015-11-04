@@ -17,9 +17,9 @@
 
 /* Private functions ---------------------------------------------------------*/
 struct ip_addr broadlink_ip;
-//struct udp_pcb  *pbroadlink_upcb;
-static const uint8_t sm[] = {0xff,0xee,0x11, 0x00,0x00,0x11,0xef,0xfe};
 broadlink_infor_t broadlink_infor;
+//struct udp_pcb  *pbroadlink_upcb;
+
 uint8_t BroadlinktFind[8] = {0xff,0xee,FIND_CMD, 0x00,0x00,0x11,0xef,0xfe};
 uint8_t BroadlinkKeepAlive[6] = {0xff,0xee,KEEPALIVE_CMD, 0x22,0xef,0xfe};
 uint8_t BroadlinkQuery[] = {0xff,0xee,QUERY_CMD, 0x22,0xef,0xfe};
@@ -28,6 +28,57 @@ uint8_t BroadlinkQuery[] = {0xff,0xee,QUERY_CMD, 0x22,0xef,0xfe};
 static void broadlink_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
 extern void SET_IP4_ADDR(struct ip_addr *ipaddr,unsigned char a,unsigned char b,unsigned char c,unsigned char d);
 
+
+#if 1
+err_t broadlink_init(void)
+{
+	err_t ret = ERR_OK;
+	SET_IP4_ADDR(&broadlink_infor.ip_addr, BROADLINK_IP_ADDR);
+	broadlink_infor.upcb = udp_new();
+	if(broadlink_infor.upcb==NULL)
+		return ERR_BUF;
+	broadlink_infor.upcb->local_port = UDP_CLIENT_PORT;
+	ret = udp_bind(broadlink_infor.upcb, IP_ADDR_ANY, UDP_CLIENT_PORT);
+	if(ret!=ERR_OK)
+	{
+		udp_remove(broadlink_infor.upcb);
+		return ret;
+	}
+	ret = udp_connect(broadlink_infor.upcb, &broadlink_infor.ip_addr, BROADLINK_PORT);
+	if(ret!=ERR_OK)
+	{
+		udp_remove(broadlink_infor.upcb);
+		return ret;
+	}
+	udp_recv(broadlink_infor.upcb, broadlink_rec_callback, NULL);
+	return ret;
+}
+
+err_t Broadlink_Send(uint8_t *p, uint16_t len)
+{
+		struct pbuf *pSend;
+		err_t ret = ERR_OK;
+	
+		pSend = pbuf_alloc(PBUF_TRANSPORT, len, PBUF_RAM);
+		if(pSend==NULL)
+			return ERR_BUF;
+		pSend->payload = p;
+		pSend->tot_len = pSend->len = len;
+		
+		ret = udp_connect(broadlink_infor.upcb, &broadlink_infor.ip_addr, BROADLINK_PORT);
+		if(ret!=ERR_OK)
+		{
+			udp_remove(broadlink_infor.upcb);
+			return ret;
+		}
+		ret = udp_send(broadlink_infor.upcb, pSend); 
+		udp_disconnect(broadlink_infor.upcb);
+		if(ret!=ERR_OK)
+			printf("send failed\r\n");
+		pbuf_free(pSend);
+		return ret;
+}
+#else
 void broadlink_broadcast_init(void)
 {
    
@@ -50,6 +101,7 @@ void broadlink_broadcast_init(void)
    /* Free the p buffer */
    pbuf_free(p);
 }
+#endif
 
 
 err_t Broadlink_Send_Rece(uint8_t *p, uint16_t len)
@@ -59,9 +111,6 @@ err_t Broadlink_Send_Rece(uint8_t *p, uint16_t len)
 			uint8_t temp[30];
 	
 			
-			struct udp_pcb *upcb = udp_new(); 
-			if(upcb==NULL)
-				return ERR_BUF;
 			memcpy(temp, p,len);
 			pSend = pbuf_alloc(PBUF_TRANSPORT, 256, PBUF_RAM);
 			if(pSend==NULL)
@@ -70,25 +119,25 @@ err_t Broadlink_Send_Rece(uint8_t *p, uint16_t len)
 			SET_IP4_ADDR(&broadlink_ip, BROADLINK_IP_ADDR); 
 			pSend->payload = p; 
 			pSend->len = pSend->tot_len = len;
-			upcb->local_port = UDP_CLIENT_PORT;
+			broadlink_infor.upcb->local_port = UDP_CLIENT_PORT;
 
-			udp_connect(upcb, &broadlink_ip, BROADLINK_PORT);
-			ret = udp_send(upcb, pSend); 
+//			udp_connect(broadlink_infor.upcb, &broadlink_ip, BROADLINK_PORT);
+			ret = udp_send(broadlink_infor.upcb, pSend); 
 			if(ret!= ERR_OK)
 			{
 				pbuf_free(pSend);
 				return ret;
 			}
-			udp_disconnect(upcb);
-			
-			ret = udp_bind(upcb, IP_ADDR_ANY, UDP_CLIENT_PORT);
-			if(ret!=ERR_OK)
-			{
-				udp_remove(upcb);
-				pbuf_free(pSend);
-				return ret;
-			}
-			udp_recv(upcb, broadlink_rec_callback, NULL);
+			udp_disconnect(broadlink_infor.upcb);
+//			
+//			ret = udp_bind(broadlink_infor.upcb, IP_ADDR_ANY, UDP_CLIENT_PORT);
+//			if(ret!=ERR_OK)
+//			{
+//				udp_remove(broadlink_infor.upcb);
+//				pbuf_free(pSend);
+//				return ret;
+//			}
+//			udp_recv(broadlink_infor.upcb, broadlink_rec_callback, NULL);
 			pbuf_free(pSend);	
 		
 			printf("[BDLINK]: send broadcast\r\n");
@@ -100,7 +149,7 @@ err_t Broadlink_Find(uint8_t *passwd)
 		
 															
 		BroadlinktFind[5] =  FIND_CMD + *passwd + *(passwd+1);		
-		return Broadlink_Send_Rece(BroadlinktFind, sizeof(BroadlinktFind));
+		return Broadlink_Send(BroadlinktFind, sizeof(BroadlinktFind));
 }
 
 err_t Broadlink_KeepAlive(void)

@@ -23,6 +23,7 @@ extern broadlink_infor_t broadlink_infor;
 
 
 err_t Broadlink_Find(uint8_t *passwd);
+err_t broadlink_init(void);
 
 #endif
 

@@ -230,6 +230,7 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 					flag_server = 1;
 					server_init();
 				}
+			  broadlink_init();
 //		  /* Initialize the client application */
 //  	      client_init();   
     }
