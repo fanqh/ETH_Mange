@@ -72,9 +72,10 @@ err_t Broadlink_Send(uint8_t *p, uint16_t len)
 			return ret;
 		}
 		ret = udp_send(broadlink_infor.upcb, pSend); 
-		udp_disconnect(broadlink_infor.upcb);
 		if(ret!=ERR_OK)
 			printf("send failed\r\n");
+		udp_disconnect(broadlink_infor.upcb);
+		
 		pbuf_free(pSend);
 		return ret;
 }
