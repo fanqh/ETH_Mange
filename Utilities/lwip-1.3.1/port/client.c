@@ -78,32 +78,35 @@ uint8_t Sent[]="fanqh test udp client\r\n";
 uint8_t sm[] = {0xff,0xee,0x11, 0x00,0x00,0x11,0xef,0xfe};
 void client_init(void)
 {
-   struct udp_pcb *upcb;
-   struct pbuf *p;
+		struct udp_pcb *upcb;
+		struct pbuf *p;
+		
 
-   SET_IP4_ADDR(&ip_udp_server, UDP_SERVER_IP);                              
-   /* Create a new UDP control block  */
-   upcb = udp_new();   
-   p = pbuf_alloc(PBUF_TRANSPORT, sizeof(Sent), PBUF_RAM);
-	 p->payload = (void*)sm; 
-	p->len =8;
-	p->tot_len = 8;
-	 upcb->local_port = UDP_CLIENT_PORT;
-	 udp_connect(upcb, &ip_udp_server, UDP_SERVER_PORT);	 
-	 udp_send(upcb, p); 
-	
-	printf("=>send udp a package\r\n");
-	   /* Reset the upcb */
-   udp_disconnect(upcb);
-   
-   /* Bind the upcb to any IP address and the UDP_PORT port*/
-   udp_bind(upcb, IP_ADDR_ANY, UDP_CLIENT_PORT);
-	
-	
-   udp_recv(upcb, udp_client_callback, NULL);
+		SET_IP4_ADDR(&ip_udp_server, UDP_SERVER_IP);                              
+		/* Create a new UDP control block  */
+		upcb = udp_new();   
+		p = pbuf_alloc(PBUF_TRANSPORT, 256, PBUF_RAM);
+		p->payload = (void*)sm; 
+		p->len =8;
+		p->tot_len = 8;
+		upcb->local_port = UDP_CLIENT_PORT;
+		udp_connect(upcb, &ip_udp_server, UDP_SERVER_PORT);	 
+		udp_send(upcb, p); 
 
-   /* Free the p buffer */
-   pbuf_free(p);
+		printf("=>send udp a package\r\n");
+		 /* Reset the upcb */
+		udp_disconnect(upcb);
+
+		/* Bind the upcb to any IP address and the UDP_PORT port*/
+		if(ERR_USE==udp_bind(upcb, IP_ADDR_ANY, UDP_CLIENT_PORT))
+		{
+				udp_remove(upcb);
+		}
+		else
+				udp_recv(upcb, udp_client_callback, NULL);
+
+		/* Free the p buffer */
+		pbuf_free(p);
   
 }
 

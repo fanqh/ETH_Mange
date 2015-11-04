@@ -231,7 +231,7 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 					server_init();
 				}
 //		  /* Initialize the client application */
-  	      client_init();   
+//  	      client_init();   
     }
 
 #if LWIP_DHCP

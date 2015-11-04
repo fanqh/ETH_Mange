@@ -30,7 +30,7 @@
 #endif
 	 
 #define MANAGE_UDP_SERVER_PORT  9009	 
-
+#define DEBUG printf
 	 
 typedef struct
 {

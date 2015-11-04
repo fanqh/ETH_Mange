@@ -5,6 +5,10 @@
 #include "stm32f10x.h"
 #include "lwip/udp.h"
 
+#define 	FIND_CMD 				0x11
+#define   KEEPALIVE_CMD   0x22
+#define   QUERY_CMD       0XA3
+
 
 typedef struct{
 	uint8_t is_connect;
@@ -18,8 +22,7 @@ typedef struct{
 extern broadlink_infor_t broadlink_infor;
 
 
-
-void broadlink_broadcast_init(void);
+err_t Broadlink_Find(uint8_t *passwd);
 
 #endif
 

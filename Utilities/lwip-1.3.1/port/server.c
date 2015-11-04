@@ -26,6 +26,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "netconf.h"
+#include "broadlink.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -66,7 +67,7 @@ void server_init(void)
    if(udp_bind(upcb, IP_ADDR_ANY, MANAGE_UDP_SERVER_PORT)==ERR_OK)
 			udp_recv(upcb, udp_server_callback, NULL);  
 	 else
-		 printf("[server]: add and port is used\r\n");
+		 DEBUG("[server]: add and port is used\r\n");
 }
 
 /**
@@ -89,19 +90,20 @@ void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 		return;
 	memcpy(buff,p->payload,p->len);
 	buff[p->len] = '\0';
-	printf("\r\n[server]: receive client ip addr: %d.%d,%d,%d\r\n\
+	DEBUG("\r\n[server]: receive client ip addr: %d.%d,%d,%d\r\n\
 	port: %d\r\n", (uint8_t)((uint32_t)(addr->addr)),(uint8_t)((uint32_t)(addr->addr) >> 8), (uint8_t)((uint32_t)(addr->addr) >> 16), (uint8_t)((uint32_t)(addr->addr) >> 24),port);
-  printf("[server]: sever receive: %s\r\n", buff);
+  DEBUG("[server]: receive: %s\r\n", buff);
 	
 	
 	ptr = (uint8_t*)strstr((char*)buff, FindCMD);
 	if(ptr)
 	{
-		printf("[server]: RemoteGw: %s\r\n",ptr+sizeof(FindCMD)-1); 
+		DEBUG("[server]: RemoteGw: %s\r\n",ptr+sizeof(FindCMD)-1); 
 		pGW = ptr+sizeof(FindCMD)-1;
 		remote_gw.addr = inet_addr(pGW);
 		if(remote_gw.addr == Device_Infor.gw.addr)
 		{
+			uint8_t i;
 			struct pbuf *pudpSend;
 			
 			strcat(find_resp.maccmd, "mac:");
@@ -118,12 +120,18 @@ void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 			udp_send(upcb, pudpSend);
 			udp_disconnect(upcb);
 		
-//			pbuf_free(pudpSend);
-//			udp_bind(upcb, IP_ADDR_ANY, MANAGE_UDP_SERVER_PORT); 
-//			udp_recv(upcb, udp_server_callback, NULL);  
+			pbuf_free(pudpSend);
+			udp_bind(upcb, IP_ADDR_ANY, MANAGE_UDP_SERVER_PORT); 
+			udp_recv(upcb, udp_server_callback, NULL);  
 			
 		}
 			
+	}
+	else if(strstr((char*)buff, "find"))
+	{
+		uint8_t pw[2] = {0,0};
+		Broadlink_Find(pw);
+		printf("[server]: find\r\n");
 	}
   pbuf_free(p);
    
