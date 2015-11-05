@@ -103,7 +103,6 @@ void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 		remote_gw.addr = inet_addr(pGW);
 		if(remote_gw.addr == Device_Infor.gw.addr)
 		{
-			uint8_t i;
 			struct pbuf *pudpSend;
 			
 			strcat(find_resp.maccmd, "mac:");
@@ -132,6 +131,20 @@ void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 		uint8_t pw[2] = {0,0};
 		Broadlink_Find(pw);
 		printf("[server]: find\r\n");
+	}
+	else if(strstr((char*)buff,"keepalive"))
+	{
+		Broadlink_KeepAlive();
+		printf("[server]: keepalive\r\n");
+	}
+	else if(strstr((char*)buff, "query"))
+	{ 
+		uint8_t CheckState = 0xf0;
+		uint8_t Port = 0;
+		uint8_t id[4] = {0,0,0,0};
+		
+		Broadlink_Query(CheckState, Port, id );
+		printf("[server]: query\r\n");
 	}
   pbuf_free(p);
    

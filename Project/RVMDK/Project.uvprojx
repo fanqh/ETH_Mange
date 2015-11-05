@@ -10,7 +10,6 @@
       <TargetName>神舟IV号</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
-      <pCCUsed>5060020::V5.06 (build 20)::ARMCC</pCCUsed>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32F107VC</Device>
@@ -488,6 +487,11 @@
               <FileName>uart_printf.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\uart_printf.c</FilePath>
+            </File>
+            <File>
+              <FileName>smart_switch.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\smart_switch.c</FilePath>
             </File>
           </Files>
         </Group>
