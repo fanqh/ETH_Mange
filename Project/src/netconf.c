@@ -32,6 +32,7 @@
 #include "eth_mange.h"
 #include "broadlink.h"
 #include "stm32_eth.h"
+#include "smart_switch.h"
 
 /* Private typedef -----------------------------------------------------------*/
 #define LCD_DELAY             3000
@@ -231,6 +232,7 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 					server_init();
 				}
 			  broadlink_init();
+				Switch_Init();
 //		  /* Initialize the client application */
 //  	      client_init();   
     }

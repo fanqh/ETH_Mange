@@ -10,7 +10,7 @@ typedef enum
 	UNUSE = 0,
 	DISCONNECT,
 	CONNECTED	
-}Sw_Infor_State_t
+}Sw_Infor_State_t;
 
 typedef struct
 {	
@@ -19,10 +19,16 @@ typedef struct
 	struct ip_addr  tcp_ip;
 	struct udp_pcb  *udp_pcb;
 	struct tcp_pcb  *tcp_pcb;
+	struct pbuf *p;
 	uint8_t mac[6];
 	uint8_t sn[5];
 }smart_switch_infor_t;
 
+err_t Switch_Init(void);
+err_t switch_udp_Send(uint8_t *p, uint16_t len);
+
+err_t Switch_TCP_Client_Attemp_Connect(smart_switch_infor_t  *ps);
+static err_t Switch_TCP_Client_Connected(void *arg, struct tcp_pcb *tpcb, err_t err);
 
 uint8_t CompareMac(uint8_t *pmac1, uint8_t *pmac2);
 

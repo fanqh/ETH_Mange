@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include "netconf.h"
 #include "broadlink.h"
+#include "smart_switch.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -44,6 +45,8 @@ struct FindCMDResp_t
 	char ipcmd[3];
 	struct ip_addr local_ip;
 }find_resp;
+
+		smart_switch_infor_t  pSwitch_infor;
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -145,6 +148,19 @@ void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 		
 		Broadlink_Query(CheckState, Port, id );
 		printf("[server]: query\r\n");
+	}
+	else if(strstr((char*)buff,"send"))
+	{
+		switch_udp_Send("me", 3);
+		printf("[server]: sending\r\n");
+	}	
+	else if(strstr((char*)buff,"connect"))
+	{
+
+		
+		pSwitch_infor.tcp_ip.addr  = 0x6500A8C0; 
+		Switch_TCP_Client_Attemp_Connect(&pSwitch_infor);
+		
 	}
   pbuf_free(p);
    
