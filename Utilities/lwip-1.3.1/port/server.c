@@ -156,11 +156,13 @@ void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 	}	
 	else if(strstr((char*)buff,"connect"))
 	{
-
-		
-		pSwitch_infor.tcp_ip.addr  = 0x6500A8C0; 
+		pSwitch_infor.tcp_ip.addr  = 0x6600A8C0; 
 		Switch_TCP_Client_Attemp_Connect(&pSwitch_infor);
 		
+	}
+	else if(strstr((char*)buff,"tcp"))
+	{
+		Switch_TCP_Send(&pSwitch_infor, "fanqh", 5);
 	}
   pbuf_free(p);
    
