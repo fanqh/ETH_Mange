@@ -16,12 +16,15 @@ typedef struct
 {	
 	Sw_Infor_State_t sw_state;
 	uint8_t connect_count;
+	struct ip_addr  udp_adv_ip;
 	struct ip_addr  tcp_ip;
 	struct udp_pcb  *udp_pcb;
 	struct tcp_pcb  *tcp_pcb;
 	struct pbuf *p;
 	uint8_t mac[6];
 	uint8_t sn[5];
+	uint16_t udp_local_port;
+	uint16_t udp_remote_port;
 }smart_switch_infor_t;
 
 err_t Switch_Init(void);

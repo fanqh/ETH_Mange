@@ -16,6 +16,7 @@
 #define BROADLINK_IP_ADDR				255,255,255,255
 //#define BROADLINK_IP_ADDR				192,168,0,100
 
+
 /* Private functions ---------------------------------------------------------*/
 broadlink_infor_t broadlink_infor;
 uint8_t SendBuff[UDP_PACKAGE_MAX];
@@ -39,7 +40,6 @@ extern void SET_IP4_ADDR(struct ip_addr *ipaddr,unsigned char a,unsigned char b,
 err_t broadlink_init(void)
 {
 	err_t ret = ERR_OK;
-	
 	
 	broadlink_infor.upcb = udp_new();
 	if(broadlink_infor.upcb==NULL)
