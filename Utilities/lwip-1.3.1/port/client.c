@@ -67,6 +67,9 @@ void SET_IP4_ADDR(struct ip_addr *ipaddr,unsigned char a,unsigned char b,unsigne
                                ((u32_t)((c) & 0xff) << 8) | \
                                 (u32_t)((d) & 0xff));
 }
+
+
+
 /**
   * @brief  Initialize the client application.
   * @param  None

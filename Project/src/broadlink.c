@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "broadlink.h"
+#include "udp_client.h"
 
 
 /* Private typedef -----------------------------------------------------------*/
@@ -38,50 +39,28 @@ extern void SET_IP4_ADDR(struct ip_addr *ipaddr,unsigned char a,unsigned char b,
 err_t broadlink_init(void)
 {
 	err_t ret = ERR_OK;
-	SET_IP4_ADDR(&broadlink_infor.ip_addr, BROADLINK_IP_ADDR);
+	
+	
 	broadlink_infor.upcb = udp_new();
 	if(broadlink_infor.upcb==NULL)
 		return ERR_BUF;
-	broadlink_infor.upcb->local_port = UDP_CLIENT_PORT;
-	ret = udp_bind(broadlink_infor.upcb, IP_ADDR_ANY, UDP_CLIENT_PORT);
-	if(ret!=ERR_OK)
-	{
-		udp_remove(broadlink_infor.upcb);
-		return ret;
-	}
-	ret = udp_connect(broadlink_infor.upcb, &broadlink_infor.ip_addr, BROADLINK_PORT);
-	if(ret!=ERR_OK)
-	{
-		udp_remove(broadlink_infor.upcb);
-		return ret;
-	}
-	udp_recv(broadlink_infor.upcb, broadlink_rec_callback, NULL);
+	broadlink_infor.state = BL_UNINIT;
+	broadlink_infor.local_port = UDP_CLIENT_PORT;
+	broadlink_infor.remote_port = BROADLINK_PORT;
+	SET_IP4_ADDR(&broadlink_infor.ip_addr, BROADLINK_IP_ADDR);
+	
+	ret = udp_client_init(broadlink_infor.upcb, broadlink_rec_callback, broadlink_infor.ip_addr, broadlink_infor.remote_port, broadlink_infor.local_port);
+	if(ret==ERR_OK)
+		broadlink_infor.state = BL_INITIALIZED;
+		
 	return ret;
 }
 
 err_t Broadlink_Send(uint8_t *p, uint16_t len)
 {
-		struct pbuf *pSend;
 		err_t ret = ERR_OK;
 	
-		pSend = pbuf_alloc(PBUF_TRANSPORT, len, PBUF_RAM);
-		if(pSend==NULL)
-			return ERR_BUF;
-		pSend->payload = p;
-		pSend->tot_len = pSend->len = len;
-		
-		ret = udp_connect(broadlink_infor.upcb, &broadlink_infor.ip_addr, BROADLINK_PORT);
-		if(ret!=ERR_OK)
-		{
-			udp_remove(broadlink_infor.upcb);
-			return ret;
-		}
-		ret = udp_send(broadlink_infor.upcb, pSend); 
-		if(ret!=ERR_OK)
-			printf("send failed\r\n");
-		udp_disconnect(broadlink_infor.upcb);
-		
-		pbuf_free(pSend);
+		ret = udp_client_Send(broadlink_infor.upcb, broadlink_infor.ip_addr, broadlink_infor.remote_port, p, len);
 		return ret;
 }
 
@@ -119,11 +98,11 @@ err_t Broadlink_Query(uint8_t check_state, uint16_t port, uint8_t *id )
 
 
 
-void udp_diconnect(broadlink_infor_t *pDevice_Infor)
-{
-		
-		pDevice_Infor->is_connect = 0;
-}
+//void udp_diconnect(broadlink_infor_t *pDevice_Infor)
+//{
+//		
+//		pDevice_Infor->is_connect = 0;
+//}
 
 
 

@@ -11,9 +11,19 @@
 #define   	KEEPALIVE_CMD   		0x22
 #define   	QUERY_CMD      			0XA3
 
+typedef enum
+{
+		BL_UNINIT,
+		BL_INITIALIZED,
+		BL_CONNECTED,
+}device_state_t;
+
+
 
 typedef struct{
-	uint8_t is_connect;
+	device_state_t state;
+	uint16_t local_port;
+	uint16_t remote_port;
 	struct ip_addr ip_addr;
 	struct udp_pcb  *upcb;
 	
