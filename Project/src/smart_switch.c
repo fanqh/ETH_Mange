@@ -50,11 +50,38 @@ err_t Switch_Init(void)
 //switch udp ½ÓÊÕ
 static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
 {
-	uint8_t rec[256];
+	uint8_t rec[PACKAGE_MAX];
 	uint8_t i;
-	
+	struct ip_addr ip_addr;
+	uint8_t *ptr;
+		
 	printf("[sw]: broadcast ip: %X\r\n", (uint32_t)addr->addr);
+	memset(rec,0,PACKAGE_MAX);
 	memcpy(rec, p->payload,p->len);
+	if((NumofStr(rec, '.')==3)&&(NumofStr(rec, ',')==4))
+	{
+		if(inet_aton(rec, (struct in_addr*)&ip_addr)==0)
+			return;
+		if(ip_addr.addr!=addr->addr)
+			return;
+		switch_infor.tcp_ip.addr = ip_addr.addr;
+		ptr = strstr((char*)rec, ",");
+		if(ptr==NULL)
+			return;
+		memcpy(switch_infor.mac, ptr+1,12);
+		ptr = strstr((char*)(ptr+1),",");
+		if(ptr==NULL)
+			return;
+		memcpy(switch_infor.sn,ptr+1,9);
+		ptr = strstr((char*)(ptr+1),",");
+		if(ptr==NULL)
+			return;
+		switch_infor.state =(bool) *(ptr+1);
+		switch_infor.is_online =(bool) *(ptr+3);
+	}
+	
+	
+	
 	printf("[sw]: ");
 	for(i=0;i<p->len;i++)
 	{
@@ -241,4 +268,19 @@ uint8_t CompareMac(uint8_t *pmac1, uint8_t *pmac2)
 			return 0;
 	}
 	return 1;
+}
+
+int NumofStr(char*str, char c)
+{
+	char *p;
+	int num = 0;
+	
+	p = str;
+	while(*p!='\0')
+	{
+		if(*p==c)
+			num++;
+		++p;
+	}
+	return num;
 }

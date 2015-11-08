@@ -21,8 +21,10 @@ typedef struct
 	struct udp_pcb  *udp_pcb;
 	struct tcp_pcb  *tcp_pcb;
 	struct pbuf *p;
-	uint8_t mac[6];
+	uint8_t mac[12];
 	uint8_t sn[5];
+	bool is_online;
+	bool state;
 	uint16_t udp_local_port;
 	uint16_t udp_remote_port;
 }smart_switch_infor_t;
@@ -34,5 +36,6 @@ err_t Switch_TCP_Client_Attemp_Connect(smart_switch_infor_t  *ps);
 //static err_t Switch_TCP_Client_Connected(void *arg, struct tcp_pcb *tpcb, err_t err);
 uint8_t Switch_TCP_Send(smart_switch_infor_t *es, uint8_t *msg, uint16_t len);
 uint8_t CompareMac(uint8_t *pmac1, uint8_t *pmac2);
+int NumofStr(char*str, char c);
 
 #endif
