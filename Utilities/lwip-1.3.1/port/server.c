@@ -162,7 +162,10 @@ void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 	}
 	else if(strstr((char*)buff,"tcp"))
 	{
-		Switch_TCP_Send(&pSwitch_infor, "fanqh", 5);
+		err_t ret;
+		ret = Switch_TCP_Send(&pSwitch_infor, "fanqh", 5);
+		if(ret!=ERR_OK)
+			printf("send err\r\n");
 	}
   pbuf_free(p);
    

@@ -110,6 +110,7 @@ err_t Switch_TCP_Client_Attemp_Connect(smart_switch_infor_t  *ps)
 	if(ps->sw_state==UNUSE)
 	{ 
 		ps->tcp_pcb = tcp_new();				//新建一个PCB
+		ps->tcp_pcb->so_options |= SOF_KEEPALIVE;
 		if(ps->tcp_pcb==NULL)
 			return ERR_BUF;
 		ps->sw_state = DISCONNECT;
@@ -157,6 +158,7 @@ void tcp_client_close( smart_switch_infor_t* ts)
 {
 	if(ts!=NULL)
 	{
+		ts->sw_state = DISCONNECT;
 		tcp_arg(ts->tcp_pcb, NULL);  			
 		tcp_recv(ts->tcp_pcb, NULL);
 	//	tcp_poll(ts->tcp_pcb, NULL, 0); 
@@ -178,6 +180,7 @@ static void tcp_err_callback(void *arg, err_t err)
 	{
 		printf("[SW]: %d\r\n", err);
 		es->connect_count++;
+		tcp_client_close(es);
 //		if(es->connect_count<3)
 //			set_timer4_countTime(TIMER_5000MS); 
 //		else
@@ -188,7 +191,7 @@ static void tcp_err_callback(void *arg, err_t err)
 	}
 }
 
-static void tcp_client_send(smart_switch_infor_t *ps)
+static err_t tcp_client_send(smart_switch_infor_t *ps)
 {
 	err_t wr_err = ERR_OK;
 	struct pbuf *ptr;
@@ -207,25 +210,25 @@ static void tcp_client_send(smart_switch_infor_t *ps)
 		else 
 		{
 			pbuf_free(ptr);
-			return;
+			return wr_err;
 		}
 	}
 	pbuf_free(ptr);
 	
+	return wr_err;
+	
 }
-uint8_t Switch_TCP_Send(smart_switch_infor_t *es, uint8_t *msg, uint16_t len)
+err_t Switch_TCP_Send(smart_switch_infor_t *es, uint8_t *msg, uint16_t len)
 {
 	if(es->sw_state!=CONNECTED)
-		return 0;
+		return ERR_CONN;
 	if(es->p==NULL)
 		es->p = pbuf_alloc(PBUF_TRANSPORT, PACKAGE_MAX, PBUF_RAM); 
 	if(es->p==NULL)
-		return 0;
+		return ERR_BUF;
 	es->p->payload = msg;
 	es->p->len = es->p->tot_len = len;
-//	pbuf_take( es->p , (char*)msg, len);
-	tcp_client_send(es);
-	return 1;
+	return tcp_client_send(es);
 }
 
 static err_t tcp_client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)

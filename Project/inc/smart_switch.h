@@ -34,7 +34,7 @@ err_t switch_udp_Send(uint8_t *p, uint16_t len);
 
 err_t Switch_TCP_Client_Attemp_Connect(smart_switch_infor_t  *ps);
 //static err_t Switch_TCP_Client_Connected(void *arg, struct tcp_pcb *tpcb, err_t err);
-uint8_t Switch_TCP_Send(smart_switch_infor_t *es, uint8_t *msg, uint16_t len);
+err_t Switch_TCP_Send(smart_switch_infor_t *es, uint8_t *msg, uint16_t len);
 uint8_t CompareMac(uint8_t *pmac1, uint8_t *pmac2);
 int NumofStr(char*str, char c);
 
