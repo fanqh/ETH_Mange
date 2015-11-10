@@ -236,27 +236,45 @@ static err_t tcp_client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, er
 	uint8_t rec[256];
 	smart_switch_infor_t  *es;
 	es = (smart_switch_infor_t*)arg;
-	
-	if(err!=ERR_OK)
+//	
+//	if(err!=ERR_OK)
+//	{
+//		if(p!=NULL)
+//			pbuf_free(p);
+//		return err;
+//	}
+//	if(es->sw_state==CONNECTED)
+//	{
+//		tcp_recved(tpcb, p->tot_len);   //读取数据
+////		memset(rec, 0, 256);
+//		if(p->len>=256)
+//			p->len = 256;
+//		memcpy(rec, (uint8_t*)(p->payload), p->len);
+//	}
+//	else
+//	{
+//		tcp_recved(tpcb, p->tot_len);   //读取数据
+//	}
+//	pbuf_free(p);  
+	if(p==NULL)
+	{
+		es->sw_state = DISCONNECT;
+		tcp_client_close(es);
+	}
+	else if(err!=ERR_OK)
 	{
 		if(p!=NULL)
-			pbuf_free(p);
+				pbuf_free(p);
 		return err;
-	}
-	if(es->sw_state==CONNECTED)
-	{
-		tcp_recved(tpcb, p->tot_len);   //读取数据
-		memset(rec, 0, 256);
-		if(p->len>256)
-			p->len = 256;
-		memcpy(rec,p->payload,p->len);
 	}
 	else
 	{
-		tcp_recved(tpcb, p->tot_len);   //读取数据
+		if(p->tot_len >=256)
+			p->tot_len = 256;
+		memcpy(rec, (uint8_t*)(p->payload), p->len);	
+		memcpy(rec, (uint8_t*)(p->payload), p->tot_len);
+		pbuf_free(p); 
 	}
-	pbuf_free(p);  
-	
 	return err;
 }
 
