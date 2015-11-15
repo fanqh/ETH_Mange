@@ -13,7 +13,7 @@ err_t udp_client_init(struct udp_pcb  *upcb, void (* recv)(void *arg, struct udp
 {
 	err_t ret = ERR_OK;
 //	upcb->local_port = UDP_CLIENT_PORT;
-	ret = udp_bind(upcb, IP_ADDR_ANY, local_port);
+	ret = udp_bind(upcb, &ip_addr, local_port);
 	if(ret!=ERR_OK)
 	{
 		udp_remove(upcb);

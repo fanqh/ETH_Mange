@@ -112,6 +112,7 @@ static void broadlink_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf 
 	uint8_t rec[256];
 	uint8_t i;
 	
+	broadlink_infor.ip_addr.addr = addr->addr;
 	printf("[BDLINK]: broadcast ip: %X\r\n", (uint32_t)addr->addr);
 	memcpy(rec, p->payload,p->len);
 	printf("[BDLINK]: ");

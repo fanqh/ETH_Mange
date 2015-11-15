@@ -22,7 +22,7 @@ struct ip_addr adv_ip;
 uint8_t udp_init =0;
 struct tcp_pcb *TcpPCB;
 
-const uint8_t SwitchAdvCMD[] = "YZ-RECOSCAN";
+//const uint8_t SwitchAdvCMD[] = "YZ-RECOSCAN";
 
 static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
 static err_t Switch_TCP_Client_Connected(void *arg, struct tcp_pcb *tpcb, err_t err);
@@ -58,7 +58,7 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	printf("[sw]: broadcast ip: %X\r\n", (uint32_t)addr->addr);
 	memset(rec,0,PACKAGE_MAX);
 	memcpy(rec, p->payload,p->len);
-	if((NumofStr(rec, '.')==3)&&(NumofStr(rec, ',')==4))
+	//if((NumofStr(rec, '.')==3)&&(NumofStr(rec, ',')==4))
 	{
 		if(inet_aton(rec, (struct in_addr*)&ip_addr)==0)
 			return;
@@ -100,6 +100,7 @@ err_t switch_udp_Send(uint8_t *p, uint16_t len)
 		ret = udp_client_Send(switch_infor.udp_pcb, switch_infor.udp_adv_ip, switch_infor.udp_remote_port, p, len);
 		return ret;
 }
+
 
 
 //初始化TCP客户端
@@ -220,8 +221,8 @@ static err_t tcp_client_send(smart_switch_infor_t *ps)
 }
 err_t Switch_TCP_Send(smart_switch_infor_t *es, uint8_t *msg, uint16_t len)
 {
-	if(es->sw_state!=CONNECTED)
-		return ERR_CONN;
+//	if(es->sw_state!=CONNECTED)
+//		return ERR_CONN;
 	if(es->p==NULL)
 		es->p = pbuf_alloc(PBUF_TRANSPORT, PACKAGE_MAX, PBUF_RAM); 
 	if(es->p==NULL)

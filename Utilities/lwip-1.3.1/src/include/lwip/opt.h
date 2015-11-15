@@ -231,7 +231,7 @@
  * (requires the LWIP_TCP option)
  */
 #ifndef MEMP_NUM_TCP_PCB
-#define MEMP_NUM_TCP_PCB                1//5
+#define MEMP_NUM_TCP_PCB                5//5
 #endif
 
 /**

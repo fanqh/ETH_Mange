@@ -37,5 +37,5 @@ err_t Switch_TCP_Client_Attemp_Connect(smart_switch_infor_t  *ps);
 err_t Switch_TCP_Send(smart_switch_infor_t *es, uint8_t *msg, uint16_t len);
 uint8_t CompareMac(uint8_t *pmac1, uint8_t *pmac2);
 int NumofStr(char*str, char c);
-
+//const uint8_t SwitchAdvCMD[];
 #endif
