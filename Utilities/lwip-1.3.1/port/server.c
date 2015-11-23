@@ -46,8 +46,9 @@ struct FindCMDResp_t
 	struct ip_addr local_ip;
 }find_resp;
 
-		smart_switch_infor_t  pSwitch_infor;
+//		smart_switch_infor_t  pSwitch_infor;
 uint8_t SwitchAdvCMD[] = "YZ-RECOSCAN";
+uint8_t Switch_RealTimeCMD[] = "AT+YZSWITCH=1,ON,201511222133\r\n";
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -152,20 +153,20 @@ void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 	}
 	else if(strstr((char*)buff,"send"))
 	{
-		switch_udp_Send(SwitchAdvCMD, sizeof(SwitchAdvCMD));
+		switch_udp_Send(SwitchAdvCMD, sizeof(SwitchAdvCMD)-1);
 		printf("[server]: sending\r\n");
 	}	
 	else if(strstr((char*)buff,"connect"))
 	{
 		//pSwitch_infor.tcp_ip.addr  = 0x6600A8C0; 
-		pSwitch_infor.tcp_ip.addr  = 0xf801010A;
-		Switch_TCP_Client_Attemp_Connect(&pSwitch_infor);
+//		pSwitch_infor.tcp_ip.addr  = 0xf801010A;
+		Switch_TCP_Client_Attemp_Connect(&switch_infor);
 		
 	}
 	else if(strstr((char*)buff,"tcp"))
 	{
 		err_t ret;
-		ret = Switch_TCP_Send(&pSwitch_infor, "fanqh", 5);
+		ret = Switch_TCP_Send(&switch_infor, Switch_RealTimeCMD, sizeof(Switch_RealTimeCMD));
 		if(ret!=ERR_OK)
 			printf("send err\r\n");
 	}

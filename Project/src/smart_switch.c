@@ -36,7 +36,7 @@ err_t Switch_Init(void)
 	
 	err_t ret = ERR_OK;
 	
-	switch_infor.udp_adv_ip.addr = Device_Infor.gw.addr | 0xff000000;
+	switch_infor.udp_adv_ip.addr = 0xffffffff;//Device_Infor.gw.addr | 0xff000000;
 	switch_infor.udp_pcb = udp_new();
 	if(switch_infor.udp_pcb==NULL)
 		return ERR_BUF;
@@ -44,7 +44,7 @@ err_t Switch_Init(void)
 	switch_infor.udp_local_port = SWITCH_UPD_LOCAL_PORT;
 	
 	
-	ret = udp_client_init(switch_infor.udp_pcb, switch_rec_callback, switch_infor.udp_adv_ip, switch_infor.udp_remote_port, switch_infor.udp_local_port);
+	ret = udp_client_init(switch_infor.udp_pcb, switch_rec_callback, switch_infor.udp_adv_ip, switch_infor.udp_remote_port, switch_infor.udp_local_port,&switch_infor);
 	return ret;
 }
 //switch udp ½ÓÊÕ
@@ -54,17 +54,20 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	uint8_t i;
 	struct ip_addr ip_addr;
 	uint8_t *ptr;
-		
+	smart_switch_infor_t *pSw;
+	
+	pSw = (smart_switch_infor_t*)arg;
 	printf("[sw]: broadcast ip: %X\r\n", (uint32_t)addr->addr);
 	memset(rec,0,PACKAGE_MAX);
 	memcpy(rec, p->payload,p->len);
-	//if((NumofStr(rec, '.')==3)&&(NumofStr(rec, ',')==4))
+	if((NumofStr(rec, '.')==3)&&(NumofStr(rec, ',')==5))
 	{
 		if(inet_aton(rec, (struct in_addr*)&ip_addr)==0)
 			return;
 		if(ip_addr.addr!=addr->addr)
 			return;
 		switch_infor.tcp_ip.addr = ip_addr.addr;
+		
 		ptr = strstr((char*)rec, ",");
 		if(ptr==NULL)
 			return;
@@ -73,11 +76,11 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		if(ptr==NULL)
 			return;
 		memcpy(switch_infor.sn,ptr+1,9);
-		ptr = strstr((char*)(ptr+1),",");
+		ptr = strstr((char*)(ptr+10),",");
 		if(ptr==NULL)
 			return;
-		switch_infor.state =(bool) *(ptr+1);
-		switch_infor.is_online =(bool) *(ptr+3);
+		switch_infor.is_online =(bool) *(ptr+1);
+		switch_infor.state =(bool) *(ptr+3);
 	}
 	
 	
@@ -184,7 +187,7 @@ static void tcp_err_callback(void *arg, err_t err)
 		tcp_client_close(es);
 //		if(es->connect_count<3)
 //			set_timer4_countTime(TIMER_5000MS); 
-//		else
+//		else001
 //		{
 //			connet_flag = 4;  pbuf_take pbuf_ref
 //			set_timer4_countTime(TIMER_10000MS);tcp_sndbuf pbuf_take
@@ -237,6 +240,8 @@ static err_t tcp_client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, er
 	uint8_t rec[256];
 	smart_switch_infor_t  *es;
 	es = (smart_switch_infor_t*)arg;
+	
+	printf("[SW]: tcp received\r\n");
 //	
 //	if(err!=ERR_OK)
 //	{

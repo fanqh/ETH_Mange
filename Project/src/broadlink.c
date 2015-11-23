@@ -49,7 +49,7 @@ err_t broadlink_init(void)
 	broadlink_infor.remote_port = BROADLINK_PORT;
 	SET_IP4_ADDR(&broadlink_infor.ip_addr, BROADLINK_IP_ADDR);
 	
-	ret = udp_client_init(broadlink_infor.upcb, broadlink_rec_callback, broadlink_infor.ip_addr, broadlink_infor.remote_port, broadlink_infor.local_port);
+	ret = udp_client_init(broadlink_infor.upcb, broadlink_rec_callback, broadlink_infor.ip_addr, broadlink_infor.remote_port, broadlink_infor.local_port,&broadlink_infor);
 	if(ret==ERR_OK)
 		broadlink_infor.state = BL_INITIALIZED;
 		

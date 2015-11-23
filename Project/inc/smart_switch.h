@@ -8,6 +8,7 @@
 typedef enum
 {
 	UNUSE = 0,
+	FIND,
 	DISCONNECT,
 	CONNECTED	
 }Sw_Infor_State_t;
@@ -22,12 +23,15 @@ typedef struct
 	struct tcp_pcb  *tcp_pcb;
 	struct pbuf *p;
 	uint8_t mac[12];
-	uint8_t sn[5];
+	uint8_t sn[9];
 	bool is_online;
 	bool state;
 	uint16_t udp_local_port;
 	uint16_t udp_remote_port;
 }smart_switch_infor_t;
+
+
+extern smart_switch_infor_t switch_infor;
 
 err_t Switch_Init(void);
 err_t switch_udp_Send(uint8_t *p, uint16_t len);

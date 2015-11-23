@@ -9,23 +9,23 @@
 
 
 err_t udp_client_init(struct udp_pcb  *upcb, void (* recv)(void *arg, struct udp_pcb *upcb, struct pbuf *p,
-                     struct ip_addr *addr, u16_t port),struct ip_addr ip_addr, uint16_t remote_port, uint16_t local_port)
+                     struct ip_addr *addr, u16_t port),struct ip_addr ip_addr, uint16_t remote_port, uint16_t local_port, void *arg)
 {
 	err_t ret = ERR_OK;
 //	upcb->local_port = UDP_CLIENT_PORT;
-	ret = udp_bind(upcb, &ip_addr, local_port);
+	ret = udp_bind(upcb, IP_ADDR_ANY, local_port);
 	if(ret!=ERR_OK)
 	{
 		udp_remove(upcb);
 		return ret;
 	}
-	ret = udp_connect(upcb, &ip_addr, remote_port);
-	if(ret!=ERR_OK)
-	{
-		udp_remove(upcb);
-		return ret;
-	}
-	udp_recv(upcb, recv, NULL);
+//	ret = udp_connect(upcb, &ip_addr, remote_port);
+//	if(ret!=ERR_OK)
+//	{
+//		udp_remove(upcb);
+//		return ret;
+//	}
+	udp_recv(upcb, recv, arg);
 	return ret;
 }
 
