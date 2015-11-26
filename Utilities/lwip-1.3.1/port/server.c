@@ -106,13 +106,13 @@ void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 		DEBUG("[server]: RemoteGw: %s\r\n",ptr+sizeof(FindCMD)-1); 
 		pGW = ptr+sizeof(FindCMD)-1;
 		remote_gw.addr = inet_addr(pGW);
-		if(remote_gw.addr == Device_Infor.gw.addr)
+		if(remote_gw.addr == Device_Infor.pnetif->gw.addr)
 		{
 			struct pbuf *pudpSend;
 			
 			strcat(find_resp.maccmd, "mac:");
 			strcat(find_resp.ipcmd,"IP:");
-			find_resp.local_ip = Device_Infor.ip_addr;
+			find_resp.local_ip = Device_Infor.pnetif->ip_addr;
 			memcpy(find_resp.macaddr , Device_Infor.macaddr, 6);
 		
 			pudpSend = pbuf_alloc(PBUF_TRANSPORT, 64, PBUF_RAM);

@@ -223,7 +223,7 @@
  * (requires the LWIP_UDP option)
  */
 #ifndef MEMP_NUM_UDP_PCB
-#define MEMP_NUM_UDP_PCB                16//4
+#define MEMP_NUM_UDP_PCB                32//4
 #endif
 
 /**
@@ -231,7 +231,7 @@
  * (requires the LWIP_TCP option)
  */
 #ifndef MEMP_NUM_TCP_PCB
-#define MEMP_NUM_TCP_PCB                5//5
+#define MEMP_NUM_TCP_PCB                32//5
 #endif
 
 /**

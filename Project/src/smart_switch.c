@@ -31,15 +31,16 @@ static void tcp_err_callback(void *arg, err_t err);
 
 
 //switch ³õÊ¼»¯
-err_t Switch_Init(void)
+err_t Switch_Init(device_infor_t *pDev)
 {
 	
 	err_t ret = ERR_OK;
 	
-	switch_infor.udp_adv_ip.addr = 0xffffffff;//Device_Infor.gw.addr | 0xff000000;
+	switch_infor.udp_adv_ip.addr = Device_Infor.pnetif->gw.addr | 0xff000000;
 	switch_infor.udp_pcb = udp_new();
 	if(switch_infor.udp_pcb==NULL)
 		return ERR_BUF;
+	pDev->udp_num++;
 	switch_infor.udp_remote_port = SWTICH_ADV_PORT;
 	switch_infor.udp_local_port = SWITCH_UPD_LOCAL_PORT;
 	

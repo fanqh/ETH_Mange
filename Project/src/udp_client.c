@@ -19,12 +19,6 @@ err_t udp_client_init(struct udp_pcb  *upcb, void (* recv)(void *arg, struct udp
 		udp_remove(upcb);
 		return ret;
 	}
-//	ret = udp_connect(upcb, &ip_addr, remote_port);
-//	if(ret!=ERR_OK)
-//	{
-//		udp_remove(upcb);
-//		return ret;
-//	}
 	udp_recv(upcb, recv, arg);
 	return ret;
 }

@@ -212,11 +212,10 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
       if (netif.flags & NETIF_FLAG_DHCP)
       {        
 				
-				Device_Infor.ip_addr = netif.ip_addr;
-				Device_Infor.gw = netif.gw;
-				Device_Infor.netmask = netif.gw;
+				Device_Infor.pnetif = &netif;
 				ETH_GetMACAddress(0, Device_Infor.macaddr);
-				Device_Infor.is_connet = 1;
+				Device_Infor.ConnectState = 1;
+				Device_Infor.tcp_num = Device_Infor.udp_num = 0;
 				/** Start the client/server application: only when a dynamic IP address has been obtained  **/
 
       }
@@ -231,8 +230,8 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 					flag_server = 1;
 					server_init();
 				}
-			  broadlink_init();
-				Switch_Init();
+			  broadlink_init(&Device_Infor);
+				Switch_Init(&Device_Infor);
 //		  /* Initialize the client application */
 //  	      client_init();   
     }

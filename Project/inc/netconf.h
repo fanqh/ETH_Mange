@@ -34,11 +34,14 @@
 	 
 typedef struct
 {
-	struct ip_addr ip_addr;
-  struct ip_addr netmask;
-  struct ip_addr gw;
+//	struct ip_addr ip_addr;
+//  struct ip_addr netmask;
+//  struct ip_addr gw;
+	struct netif *pnetif;
 	uint8_t macaddr[6];
-	uint8_t is_connet;
+	uint8_t ConnectState;
+	uint8_t tcp_num;
+	uint8_t udp_num;
 	
 }device_infor_t; 	 
 

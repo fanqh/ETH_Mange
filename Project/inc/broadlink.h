@@ -4,6 +4,7 @@
 #include "netif.h"
 #include "stm32f10x.h"
 #include "lwip/udp.h"
+#include "netconf.h"
 
 #define UDP_PACKAGE_MAX  			256
 
@@ -35,7 +36,7 @@ extern broadlink_infor_t broadlink_infor;
 
 
 err_t Broadlink_Find(uint8_t *passwd);
-err_t broadlink_init(void);
+err_t broadlink_init(device_infor_t *pDec);
 err_t Broadlink_KeepAlive(void);
 err_t Broadlink_Query(uint8_t check_state, uint16_t port, uint8_t *id );
 

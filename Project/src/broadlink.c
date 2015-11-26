@@ -37,13 +37,15 @@ extern void SET_IP4_ADDR(struct ip_addr *ipaddr,unsigned char a,unsigned char b,
 
 
 
-err_t broadlink_init(void)
+err_t broadlink_init(device_infor_t *pDec)
 {
 	err_t ret = ERR_OK;
 	
 	broadlink_infor.upcb = udp_new();
 	if(broadlink_infor.upcb==NULL)
 		return ERR_BUF;
+	
+	pDec->udp_num++;
 	broadlink_infor.state = BL_UNINIT;
 	broadlink_infor.local_port = UDP_CLIENT_PORT;
 	broadlink_infor.remote_port = BROADLINK_PORT;

@@ -4,6 +4,7 @@
 #include "netif.h"
 #include "stm32f10x.h"
 #include "lwip/udp.h"
+#include "netconf.h"
 
 typedef enum
 {
@@ -33,7 +34,7 @@ typedef struct
 
 extern smart_switch_infor_t switch_infor;
 
-err_t Switch_Init(void);
+err_t Switch_Init(device_infor_t *pDev);
 err_t switch_udp_Send(uint8_t *p, uint16_t len);
 
 err_t Switch_TCP_Client_Attemp_Connect(smart_switch_infor_t  *ps);
