@@ -31,7 +31,7 @@
 /* Private typedef -----------------------------------------------------------*/
 #define UDP_SERVER_PORT      9001
 #define UDP_CLIENT_PORT      9002
-#define TCP_PORT      4
+#define TCP_PORT      		 4
 //#define UDP_SERVER_IP				192,168,0,103
 #define UDP_SERVER_IP				255,255,255,255
 
