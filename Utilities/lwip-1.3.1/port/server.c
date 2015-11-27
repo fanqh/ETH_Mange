@@ -28,6 +28,7 @@
 #include "netconf.h"
 #include "broadlink.h"
 #include "smart_switch.h"
+#include "revogi.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -49,6 +50,10 @@ struct FindCMDResp_t
 //		smart_switch_infor_t  pSwitch_infor;
 uint8_t SwitchAdvCMD[] = "YZ-RECOSCAN";
 uint8_t Switch_RealTimeCMD[] = "AT+YZSWITCH=1,ON,201511222133\r\n";
+
+//smart Power trip
+uint8_t TripFindCMD[] = "00sw=all,2015-11-27,21:16:39,+8";
+uint8_t TripTurnoffCMD[] = "GET /?cmd=200&json={\"sn\":\"SWW6012003000015\",\"port\":0,\"state\":1} HTTP/1.1\r\nHost: 192.168.0.103";
 
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
@@ -169,6 +174,18 @@ void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 		ret = Switch_TCP_Send(&switch_infor, Switch_RealTimeCMD, sizeof(Switch_RealTimeCMD));
 		if(ret!=ERR_OK)
 			printf("send err\r\n");
+	}
+	else if(strstr((char*)buff, "trip"))
+	{
+		revogi_find_udp_Send(TripFindCMD, sizeof(TripFindCMD)-1);
+	}
+	else if(strstr((char*)buff, "hello"))
+	{
+		PowerTrip_TCP_Client_Attemp_Connect(&revogi_infor);
+	}
+	else if(strstr((char*)buff, "hi"))
+	{
+		PowerTrip_TCP_Send(&revogi_infor, TripTurnoffCMD, sizeof(TripTurnoffCMD)-1);
 	}
   pbuf_free(p);
    

@@ -33,6 +33,7 @@
 #include "broadlink.h"
 #include "stm32_eth.h"
 #include "smart_switch.h"
+#include "revogi.h"
 
 /* Private typedef -----------------------------------------------------------*/
 #define LCD_DELAY             3000
@@ -232,6 +233,7 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 				}
 			  broadlink_init(&Device_Infor);
 				Switch_Init(&Device_Infor);
+				revogi_Init(&Device_Infor);
 //		  /* Initialize the client application */
 //  	      client_init();   
     }

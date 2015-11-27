@@ -22,7 +22,12 @@ typedef struct
 	uint16_t udp_remote_port;
 }revogi_infor_t;
 
+extern revogi_infor_t revogi_infor;
 
+err_t revogi_Init(device_infor_t *pDev);
+err_t revogi_find_udp_Send(uint8_t *p, uint16_t len);
+err_t PowerTrip_TCP_Client_Attemp_Connect(revogi_infor_t  *ps);
+err_t PowerTrip_TCP_Send(revogi_infor_t *es, uint8_t *msg, uint16_t len);
 
 
 
