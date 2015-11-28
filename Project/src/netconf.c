@@ -34,6 +34,7 @@
 #include "stm32_eth.h"
 #include "smart_switch.h"
 #include "revogi.h"
+#include "device_server.h"
 
 /* Private typedef -----------------------------------------------------------*/
 #define LCD_DELAY             3000
@@ -64,8 +65,7 @@ uint8_t LedToggle = 4;
 uint8_t	Server = 0;
 
 /* Private function prototypes -----------------------------------------------*/
-extern void client_init(void);
-extern void server_init(void);
+//extern void client_init(void);
 
 device_infor_t Device_Infor;
 
@@ -206,36 +206,29 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
     /* We have got a new IP address so update the display */
     if (IPaddress != netif.ip_addr.addr)
     {
-      /* Read the new IP address */
       IPaddress = netif.ip_addr.addr;					
-      /* Display the new IP address */
 #if LWIP_DHCP
       if (netif.flags & NETIF_FLAG_DHCP)
       {        
 				
-				Device_Infor.pnetif = &netif;
-				ETH_GetMACAddress(0, Device_Infor.macaddr);
-				Device_Infor.ConnectState = 1;
-				Device_Infor.tcp_num = Device_Infor.udp_num = 0;
-				/** Start the client/server application: only when a dynamic IP address has been obtained  **/
-
+		  Device_Infor.pnetif = &netif;
+		  ETH_GetMACAddress(0, Device_Infor.macaddr);
+		  Device_Infor.ConnectState = 1;
+		  Device_Infor.tcp_num = Device_Infor.udp_num = 0;
       }
 #endif          
-        ETH_GetMACAddress(0, macaddress);
-        printf("=>Your MAC are configured: %X:%X:%X:%X:%X:%X\r\n", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
-				printf("=>Your ip are configured: %d,%d,%d,%d\r\n",(uint8_t)(IPaddress), (uint8_t)(IPaddress >> 8), (uint8_t)(IPaddress >> 16), (uint8_t)(IPaddress >> 24));
-				printf("=>Your gw are configured: %d,%d,%d,%d\r\n",(uint8_t)(netif.gw.addr), (uint8_t)(netif.gw.addr >> 8), (uint8_t)(netif.gw.addr >> 16), (uint8_t)(netif.gw.addr >> 24));    
-//		  /* Initialize the server application */
-				if(flag_server==0)
-  	    {
-					flag_server = 1;
-					server_init();
-				}
-			  broadlink_init(&Device_Infor);
-				Switch_Init(&Device_Infor);
-				revogi_Init(&Device_Infor);
-//		  /* Initialize the client application */
-//  	      client_init();   
+		  ETH_GetMACAddress(0, macaddress);
+		  printf("=>Your MAC are configured: %X:%X:%X:%X:%X:%X\r\n", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
+		  printf("=>Your ip are configured: %d,%d,%d,%d\r\n",(uint8_t)(IPaddress), (uint8_t)(IPaddress >> 8), (uint8_t)(IPaddress >> 16), (uint8_t)(IPaddress >> 24));
+		  printf("=>Your gw are configured: %d,%d,%d,%d\r\n",(uint8_t)(netif.gw.addr), (uint8_t)(netif.gw.addr >> 8), (uint8_t)(netif.gw.addr >> 16), (uint8_t)(netif.gw.addr >> 24));    
+		  if(flag_server==0)
+		  {
+			  flag_server = 1;
+			  udp_server_init(&Device_Infor);
+		  }
+		  broadlink_init(&Device_Infor);
+		  Switch_Init(&Device_Infor);
+		  revogi_Init(&Device_Infor);  
     }
 
 #if LWIP_DHCP

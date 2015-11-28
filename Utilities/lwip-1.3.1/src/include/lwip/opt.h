@@ -214,7 +214,7 @@
  * (requires the LWIP_RAW option)
  */
 #ifndef MEMP_NUM_RAW_PCB
-#define MEMP_NUM_RAW_PCB                16//4
+#define MEMP_NUM_RAW_PCB                32//4
 #endif
 
 /**

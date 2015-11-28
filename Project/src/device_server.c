@@ -1,22 +1,3 @@
-/**
-  ******************************************************************************
-  * @file    server.c
-  * @author  MCD Application Team
-  * @version V1.0.0
-  * @date    11/20/2009
-  * @brief   A sample UDP/TCP server application.
-  ******************************************************************************
-  * @copy
-  *
-  * THE PRESENT FIRMWARE WHICH IS FOR GUIDANCE ONLY AIMS AT PROVIDING CUSTOMERS
-  * WITH CODING INFORMATION REGARDING THEIR PRODUCTS IN ORDER FOR THEM TO SAVE
-  * TIME. AS A RESULT, STMICROELECTRONICS SHALL NOT BE HELD LIABLE FOR ANY
-  * DIRECT, INDIRECT OR CONSEQUENTIAL DAMAGES WITH RESPECT TO ANY CLAIMS ARISING
-  * FROM THE CONTENT OF SUCH FIRMWARE AND/OR THE USE MADE BY CUSTOMERS OF THE
-  * CODING INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
-  *
-  * <h2><center>&copy; COPYRIGHT 2009 STMicroelectronics</center></h2>
-  */
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -25,21 +6,13 @@
 #include "lwip/tcp.h"
 #include <string.h>
 #include <stdio.h>
-#include "netconf.h"
 #include "broadlink.h"
 #include "smart_switch.h"
 #include "revogi.h"
 #include "udp_client.h"
+#include "device_server.h"
 
 /* Private typedef -----------------------------------------------------------*/
-/* Private define ------------------------------------------------------------*/
-//#define UDP_SERVER_PORT    8   /* define the UDP local connection port */
-//#define UDP_CLIENT_PORT    4   /* define the UDP remote conne                                                                                        
-#define TCP_PORT    4	/* define the TCP connection port */
-const char FindCMD[]="action:find,device:";
-const char maccmd[] = "mac:";
-const char ipcmd[]="IP:";
-const char FindCMDResp[] = {'c','m','d',':',0,0,0,0,0,0,'I','P',':',0,0,0,0};
 struct FindCMDResp_t
 {
 	char maccmd[4];
@@ -47,6 +20,14 @@ struct FindCMDResp_t
 	char ipcmd[3];
 	struct ip_addr local_ip;
 }find_resp;
+
+
+/* Private define ------------------------------------------------------------*/                                                                                   
+#define TCP_PORT    4	/* define the TCP connection port */
+const char FindCMD[]="action:find,device:";
+const char maccmd[] = "mac:";
+const char ipcmd[]="IP:";
+const char FindCMDResp[] = {'c','m','d',':',0,0,0,0,0,0,'I','P',':',0,0,0,0};
 
 //		smart_switch_infor_t  pSwitch_infor;
 uint8_t SwitchAdvCMD[] = "YZ-RECOSCAN";
@@ -59,26 +40,39 @@ uint8_t TripTurnoffCMD[] = "GET /?cmd=200&json={\"sn\":\"SWW6012003000015\",\"po
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 /* Private function prototypes -----------------------------------------------*/
-void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
+static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
 err_t tcp_server_accept(void *arg, struct tcp_pcb *pcb, err_t err);
 static err_t tcp_server_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err);
 
-/* Private functions ---------------------------------------------------------*/
+
+Dev_Server_infor_t dev_Server_inf;
+
+
+
 
 /**
   * @brief  Initialize the server application.
   * @param  None
   * @retval None
   */
-void server_init(device_infor_t *pd)
+err_t udp_server_init(device_infor_t *pd)
 {
-   struct udp_pcb *upcb;                                 
-   
-   upcb = udp_new();
-   if(udp_bind(upcb, IP_ADDR_ANY, MANAGE_UDP_SERVER_PORT)==ERR_OK)
-			udp_recv(upcb, udp_server_callback, NULL);  
-	 else
-		 DEBUG("[server]: add and port is used\r\n");
+    err_t ret;
+	struct udp_pcb *upcb;                                 
+
+	upcb = udp_new();
+	if(upcb==NULL)
+		return ERR_BUF;
+	if((ret = udp_bind(upcb, IP_ADDR_ANY, MANAGE_UDP_SERVER_PORT))!=ERR_OK)
+	{		
+		udp_remove(upcb);
+		return ret;
+	}
+	dev_Server_inf.pDevInfor = pd;
+	dev_Server_inf.upcb_server = upcb;
+	pd->udp_num++;
+	udp_recv(upcb, udp_server_callback, NULL);  
+	return ret;
 }
 
 /**
@@ -90,22 +84,22 @@ void server_init(device_infor_t *pd)
   * @param port the remote port from which the packet was received
   * @retval None
   */
-void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
+static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
 {
 	uint8_t buff[256];
 	uint8_t *ptr,*pGW;
 	struct ip_addr remote_gw;
-	
-  
+
+
 	if(p->len>256)
 		return;
 	memcpy(buff,p->payload,p->len);
 	buff[p->len] = '\0';
 	DEBUG("\r\n[server]: receive client ip addr: %d.%d,%d,%d\r\n\
 	port: %d\r\n", (uint8_t)((uint32_t)(addr->addr)),(uint8_t)((uint32_t)(addr->addr) >> 8), (uint8_t)((uint32_t)(addr->addr) >> 16), (uint8_t)((uint32_t)(addr->addr) >> 24),port);
-    DEBUG("[server]: receive: %s\r\n", buff);
-	
-	
+	DEBUG("[server]: receive: %s\r\n", buff);
+
+
 	ptr = (uint8_t*)strstr((char*)buff, FindCMD);
 	if(ptr)
 	{
@@ -165,7 +159,7 @@ void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 	else if(strstr((char*)buff,"connect"))
 	{
 		//pSwitch_infor.tcp_ip.addr  = 0x6600A8C0; 
-//		pSwitch_infor.tcp_ip.addr  = 0xf801010A;
+	//		pSwitch_infor.tcp_ip.addr  = 0xf801010A;
 		Switch_TCP_Client_Attemp_Connect(&switch_infor);
 		
 	}
@@ -188,7 +182,8 @@ void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 	{
 		PowerTrip_TCP_Send(&revogi_infor, TripTurnoffCMD, sizeof(TripTurnoffCMD)-1);
 	}
-  pbuf_free(p);
+	udp_client_Send(upcb, *addr, port, p->payload, p->len);
+	pbuf_free(p);
    
 }
 
