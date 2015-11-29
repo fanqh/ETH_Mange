@@ -8,6 +8,7 @@
 #include "smart_switch.h"
 #include "netconf.h"
 #include "udp_client.h"
+#include "device_server.h"
 
 #define SWTICH_ADV_PORT   			 48899
 #define SWITCH_UPD_LOCAL_PORT  	 48899
@@ -41,11 +42,12 @@ err_t Switch_Init(device_infor_t *pDev)
 	if(switch_infor.udp_pcb==NULL)
 		return ERR_BUF;
 	pDev->udp_num++;
+	switch_infor.pdev = pDev;
 	switch_infor.udp_remote_port = SWTICH_ADV_PORT;
 	switch_infor.udp_local_port = SWITCH_UPD_LOCAL_PORT;
 	
 	
-	ret = udp_client_init(switch_infor.udp_pcb, switch_rec_callback, switch_infor.udp_adv_ip, switch_infor.udp_remote_port, switch_infor.udp_local_port,&switch_infor);
+	ret = udp_client_init(switch_infor.udp_pcb, switch_rec_callback, switch_infor.udp_adv_ip, switch_infor.udp_remote_port, switch_infor.udp_local_port, &switch_infor);
 	return ret;
 }
 //switch udp ½ÓÊÕ
@@ -56,8 +58,10 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	struct ip_addr ip_addr;
 	uint8_t *ptr;
 	smart_switch_infor_t *pSw;
+	Dev_Server_infor_t* pserver;
 	
 	pSw = (smart_switch_infor_t*)arg;
+	pserver = pSw->pdev->p;
 	printf("[sw]: broadcast ip: %X\r\n", (uint32_t)addr->addr);
 	memset(rec,0,PACKAGE_MAX);
 	memcpy(rec, p->payload,p->len);
@@ -85,7 +89,7 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	}
 	
 	
-	
+	udp_client_Send(pserver->upcb_server.upcb, pserver->upcb_server.addr, pserver->upcb_server.port, p->payload, p->len);
 	printf("[sw]: ");
 	for(i=0;i<p->len;i++)
 	{

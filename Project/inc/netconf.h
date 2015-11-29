@@ -24,6 +24,7 @@
 #define __NETCONF_H
 #include "stm32f10x.h"
 #include "netif.h"
+//#include "device_server.h"
 
 #ifdef __cplusplus
  extern "C" {
@@ -42,6 +43,7 @@ typedef struct
 	uint8_t ConnectState;
 	uint8_t tcp_num;
 	uint8_t udp_num;
+	void *p;
 	
 }device_infor_t; 	 
 

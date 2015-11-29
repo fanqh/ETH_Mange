@@ -2,12 +2,17 @@
 #define __DEVICE_SERVER_H_
 
 #include "netconf.h"
-
+typedef struct 
+{
+	struct udp_pcb  *upcb;
+	struct ip_addr addr;
+	uint16_t port;
+}upcb_server_t;
 
 typedef struct
 {
 	uint8_t is_tcpser_connnect;
-	struct udp_pcb  *upcb_server;
+	upcb_server_t   upcb_server;
 	struct tcp_pcb  *tcp_pcb_server;
 	device_infor_t  *pDevInfor;
 	
@@ -15,6 +20,7 @@ typedef struct
 
 
 err_t udp_server_init(device_infor_t *pd);
+Dev_Server_infor_t* GetDev_server(void);
 
 
 

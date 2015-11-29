@@ -20,6 +20,7 @@ typedef struct
 	bool state;
 	uint16_t udp_local_port;
 	uint16_t udp_remote_port;
+	device_infor_t  *pdev;
 }revogi_infor_t;
 
 extern revogi_infor_t revogi_infor;

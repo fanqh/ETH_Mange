@@ -5,6 +5,7 @@
 #include "stm32f10x.h"
 #include "lwip/udp.h"
 #include "netconf.h"
+#include "device_server.h"
 
 typedef enum
 {
@@ -29,6 +30,7 @@ typedef struct
 	bool state;
 	uint16_t udp_local_port;
 	uint16_t udp_remote_port;
+	device_infor_t  *pdev;
 }smart_switch_infor_t;
 
 

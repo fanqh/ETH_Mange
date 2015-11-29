@@ -50,6 +50,11 @@ Dev_Server_infor_t dev_Server_inf;
 
 
 
+Dev_Server_infor_t* GetDev_server(void)
+{
+	return &dev_Server_inf;
+}
+
 /**
   * @brief  Initialize the server application.
   * @param  None
@@ -69,9 +74,9 @@ err_t udp_server_init(device_infor_t *pd)
 		return ret;
 	}
 	dev_Server_inf.pDevInfor = pd;
-	dev_Server_inf.upcb_server = upcb;
+	dev_Server_inf.upcb_server.upcb = upcb;
 	pd->udp_num++;
-	udp_recv(upcb, udp_server_callback, NULL);  
+	udp_recv(upcb, udp_server_callback, &dev_Server_inf);  
 	return ret;
 }
 
@@ -89,7 +94,7 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	uint8_t buff[256];
 	uint8_t *ptr,*pGW;
 	struct ip_addr remote_gw;
-
+	Dev_Server_infor_t *ps;
 
 	if(p->len>256)
 		return;
@@ -99,7 +104,12 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	port: %d\r\n", (uint8_t)((uint32_t)(addr->addr)),(uint8_t)((uint32_t)(addr->addr) >> 8), (uint8_t)((uint32_t)(addr->addr) >> 16), (uint8_t)((uint32_t)(addr->addr) >> 24),port);
 	DEBUG("[server]: receive: %s\r\n", buff);
 
-
+	
+	ps = (Dev_Server_infor_t*) arg;
+	if(ps->upcb_server.addr.addr!=addr->addr)
+		ps->upcb_server.addr.addr = addr->addr;
+	if(ps->upcb_server.port!=port)
+		ps->upcb_server.port = port;
 	ptr = (uint8_t*)strstr((char*)buff, FindCMD);
 	if(ptr)
 	{

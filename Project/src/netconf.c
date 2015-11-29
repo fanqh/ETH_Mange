@@ -206,29 +206,29 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
     /* We have got a new IP address so update the display */
     if (IPaddress != netif.ip_addr.addr)
     {
-      IPaddress = netif.ip_addr.addr;					
-#if LWIP_DHCP
-      if (netif.flags & NETIF_FLAG_DHCP)
-      {        
-				
+		IPaddress = netif.ip_addr.addr;					
+		#if LWIP_DHCP
+		if (netif.flags & NETIF_FLAG_DHCP)
+		{        
+		  Device_Infor.p = GetDev_server();
 		  Device_Infor.pnetif = &netif;
 		  ETH_GetMACAddress(0, Device_Infor.macaddr);
 		  Device_Infor.ConnectState = 1;
 		  Device_Infor.tcp_num = Device_Infor.udp_num = 0;
-      }
+		}
 #endif          
-		  ETH_GetMACAddress(0, macaddress);
-		  printf("=>Your MAC are configured: %X:%X:%X:%X:%X:%X\r\n", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
-		  printf("=>Your ip are configured: %d,%d,%d,%d\r\n",(uint8_t)(IPaddress), (uint8_t)(IPaddress >> 8), (uint8_t)(IPaddress >> 16), (uint8_t)(IPaddress >> 24));
-		  printf("=>Your gw are configured: %d,%d,%d,%d\r\n",(uint8_t)(netif.gw.addr), (uint8_t)(netif.gw.addr >> 8), (uint8_t)(netif.gw.addr >> 16), (uint8_t)(netif.gw.addr >> 24));    
-		  if(flag_server==0)
-		  {
-			  flag_server = 1;
-			  udp_server_init(&Device_Infor);
-		  }
-		  broadlink_init(&Device_Infor);
-		  Switch_Init(&Device_Infor);
-		  revogi_Init(&Device_Infor);  
+		ETH_GetMACAddress(0, macaddress);
+		printf("=>Your MAC are configured: %X:%X:%X:%X:%X:%X\r\n", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
+		printf("=>Your ip are configured: %d,%d,%d,%d\r\n",(uint8_t)(IPaddress), (uint8_t)(IPaddress >> 8), (uint8_t)(IPaddress >> 16), (uint8_t)(IPaddress >> 24));
+		printf("=>Your gw are configured: %d,%d,%d,%d\r\n",(uint8_t)(netif.gw.addr), (uint8_t)(netif.gw.addr >> 8), (uint8_t)(netif.gw.addr >> 16), (uint8_t)(netif.gw.addr >> 24));    
+		if(flag_server==0)
+		{
+		  flag_server = 1;
+		  udp_server_init(&Device_Infor);
+		}
+		broadlink_init(&Device_Infor);
+		Switch_Init(&Device_Infor);
+		revogi_Init(&Device_Infor);  
     }
 
 #if LWIP_DHCP

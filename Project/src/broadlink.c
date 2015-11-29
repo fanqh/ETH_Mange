@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include "broadlink.h"
 #include "udp_client.h"
-
+#include "device_server.h"
 
 /* Private typedef -----------------------------------------------------------*/
 #define BROADLINK_PORT      		9001
@@ -45,13 +45,14 @@ err_t broadlink_init(device_infor_t *pDec)
 	if(broadlink_infor.upcb==NULL)
 		return ERR_BUF;
 	
+	broadlink_infor.pdev = pDec;
 	pDec->udp_num++;
 	broadlink_infor.state = BL_UNINIT;
 	broadlink_infor.local_port = UDP_CLIENT_PORT;
 	broadlink_infor.remote_port = BROADLINK_PORT;
 	SET_IP4_ADDR(&broadlink_infor.ip_addr, BROADLINK_IP_ADDR);
 	
-	ret = udp_client_init(broadlink_infor.upcb, broadlink_rec_callback, broadlink_infor.ip_addr, broadlink_infor.remote_port, broadlink_infor.local_port,&broadlink_infor);
+	ret = udp_client_init(broadlink_infor.upcb, broadlink_rec_callback, broadlink_infor.ip_addr, broadlink_infor.remote_port, broadlink_infor.local_port, &broadlink_infor);
 	if(ret==ERR_OK)
 		broadlink_infor.state = BL_INITIALIZED;
 		
@@ -113,18 +114,24 @@ static void broadlink_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf 
 //  struct tcp_pcb *pcb;
 	uint8_t rec[256];
 	uint8_t i;
-	
+	broadlink_infor_t *pbroadlink;
+	Dev_Server_infor_t *pserver;
+
+
 	broadlink_infor.ip_addr.addr = addr->addr;
+	pbroadlink = (broadlink_infor_t*)arg;
+	pserver = (Dev_Server_infor_t*)pbroadlink->pdev->p;
 	printf("[BDLINK]: broadcast ip: %X\r\n", (uint32_t)addr->addr);
 	memcpy(rec, p->payload,p->len);
 	printf("[BDLINK]: ");
+	udp_client_Send(pserver->upcb_server.upcb, pserver->upcb_server.addr, pserver->upcb_server.port, p->payload, p->len);
 	for(i=0;i<p->len;i++)
 	{
 		printf(" %X",rec[i] );
 	}
 	printf("\r\n");
 
-  pbuf_free(p);
+   pbuf_free(p);
 }
 
 

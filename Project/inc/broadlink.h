@@ -27,6 +27,7 @@ typedef struct{
 	uint16_t remote_port;
 	struct ip_addr ip_addr;
 	struct udp_pcb  *upcb;
+	device_infor_t  *pdev;
 	
 }broadlink_infor_t;
 

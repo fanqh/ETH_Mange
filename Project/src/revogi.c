@@ -34,6 +34,7 @@ err_t revogi_Init(device_infor_t *pDev)
 	revogi_infor.udp_pcb = udp_new();
 	if(revogi_infor.udp_pcb==NULL)
 		return ERR_BUF;
+	revogi_infor.pdev = pDev;
 	pDev->udp_num++;
 	revogi_infor.udp_remote_port = REVOGI_ADV_REMOTE_PORT;
 	revogi_infor.udp_local_port = REVOGI_ADV_LOCAL_PORT;
