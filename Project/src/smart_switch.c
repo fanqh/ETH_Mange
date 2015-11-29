@@ -45,7 +45,7 @@ err_t Switch_Init(device_infor_t *pDev)
 	switch_infor.pdev = pDev;
 	switch_infor.udp_remote_port = SWTICH_ADV_PORT;
 	switch_infor.udp_local_port = SWITCH_UPD_LOCAL_PORT;
-	
+	switch_infor.tcp_ip.addr = 0;
 	
 	ret = udp_client_init(switch_infor.udp_pcb, switch_rec_callback, switch_infor.udp_adv_ip, switch_infor.udp_remote_port, switch_infor.udp_local_port, &switch_infor);
 	return ret;
@@ -127,7 +127,7 @@ err_t Switch_TCP_Client_Attemp_Connect(smart_switch_infor_t  *ps)
 	ret = tcp_bind(ps->tcp_pcb, IP_ADDR_ANY, SWITCH_TCP_LOCAL_PORT);
 	if(ret!=ERR_OK)
 		return ret;
-  ret = tcp_connect(ps->tcp_pcb, &ps->tcp_ip, SWITCH_TCP_PORT, Switch_TCP_Client_Connected);
+	ret = tcp_connect(ps->tcp_pcb, &ps->tcp_ip, SWITCH_TCP_PORT, Switch_TCP_Client_Connected);
 	if(ret==ERR_OK)
 	{
 		tcp_arg(ps->tcp_pcb, ps);  //回调函数参数传递
@@ -192,10 +192,10 @@ static void tcp_err_callback(void *arg, err_t err)
 		tcp_client_close(es);
 //		if(es->connect_count<3)
 //			set_timer4_countTime(TIMER_5000MS); 
-//		else001
+//		else
 //		{
-//			connet_flag = 4;  pbuf_take pbuf_ref
-//			set_timer4_countTime(TIMER_10000MS);tcp_sndbuf pbuf_take
+//			connet_flag = 4; 
+//			set_timer4_countTime(TIMER_10000MS);
 //		}	
 	}
 }

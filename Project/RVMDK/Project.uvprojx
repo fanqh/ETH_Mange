@@ -503,6 +503,11 @@
               <FileType>1</FileType>
               <FilePath>..\src\device_server.c</FilePath>
             </File>
+            <File>
+              <FileName>tcp_client.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\tcp_client.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
