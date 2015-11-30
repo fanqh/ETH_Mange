@@ -41,8 +41,6 @@ uint8_t TripTurnoffCMD[] = "GET /?cmd=200&json={\"sn\":\"SWW6012003000015\",\"po
 /* Private function prototypes -----------------------------------------------*/
 static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
 
-
-
 Dev_Server_infor_t dev_Server_inf;
 
 

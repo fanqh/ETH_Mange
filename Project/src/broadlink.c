@@ -18,7 +18,8 @@
 
 
 /* Private functions ---------------------------------------------------------*/
-broadlink_infor_t broadlink_infor;
+broadlink_infor_t broadlink_infor = 
+{};
 uint8_t SendBuff[UDP_PACKAGE_MAX];
 
 

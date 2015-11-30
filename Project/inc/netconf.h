@@ -56,12 +56,17 @@ typedef struct
 	err_t (* recv)(struct tcp_pcb *tpcb,struct pbuf *p,void *arg, err_t err);
 	uint8_t mac[12];	
 }tcp_struct_t;
+
+typedef struct
+{
+	struct ip_addr  udp_adv_ip;
+	struct udp_pcb  *upcb;
+	uint16_t uremote_port;
+	uint16_t ulocal_port;
+}udp_struct_t;
 	 
 typedef struct
 {
-//	struct ip_addr ip_addr;
-//  struct ip_addr netmask;
-//  struct ip_addr gw;
 	struct netif *pnetif;
 	uint8_t macaddr[6];
 	uint8_t ConnectState;

@@ -174,7 +174,6 @@ err_t TCP_Send(tcp_infor_t *es, uint8_t *msg, uint16_t len)
 	ptr->payload = msg;
 	ptr->len = ptr->tot_len = len;
 	
-	
 	while(ptr->len<=tcp_sndbuf(es->ptcp->tpcb)&&(wr_err == ERR_OK)&&(ptr!=NULL))
 	{
 		wr_err = tcp_write(es->ptcp->tpcb, ptr->payload, ptr->len, 1); 

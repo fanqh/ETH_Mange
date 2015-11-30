@@ -19,7 +19,17 @@
 
 #define PACKAGE_MAX              256
 
-smart_switch_infor_t switch_infor;
+
+smart_switch_infor_t switch_infor=
+{
+	0,
+	{0,0,SWTICH_ADV_PORT,SWITCH_UPD_LOCAL_PORT},//udp
+	{0,S_IDLE,0,0,SWITCH_TCP_LOCAL_PORT,SWITCH_TCP_PORT,Switch_Tcp_Rec,{0}},//tcp
+	{0},
+	FALSE,
+	FALSE,
+	0
+};
 struct ip_addr adv_ip;
 uint8_t udp_init =0;
 struct tcp_pcb *TcpPCB;
@@ -27,9 +37,6 @@ struct tcp_pcb *TcpPCB;
 //const uint8_t SwitchAdvCMD[] = "YZ-RECOSCAN";
 
 static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
-static err_t Switch_TCP_Client_Connected(void *arg, struct tcp_pcb *tpcb, err_t err);
-static err_t tcp_client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
-static void tcp_err_callback(void *arg, err_t err);
 
 
 //switch 初始化
@@ -38,18 +45,17 @@ err_t Switch_Init(device_infor_t *pDev)
 	
 	err_t ret = ERR_OK;
 	
-	memset(&switch_infor, 0, sizeof(smart_switch_infor_t));
-	switch_infor.udp_adv_ip.addr = Device_Infor.pnetif->gw.addr | 0xff000000;
-	switch_infor.udp_pcb = udp_new();
-	if(switch_infor.udp_pcb==NULL)
+	switch_infor.udp.udp_adv_ip.addr = Device_Infor.pnetif->gw.addr | 0xff000000;
+	switch_infor.udp.upcb = udp_new();
+	if(switch_infor.udp.upcb==NULL)
 		return ERR_BUF;
 	pDev->udp_num++;
 	switch_infor.pdev = pDev;
-	switch_infor.uremote_port = SWTICH_ADV_PORT;
-	switch_infor.ulocal_port = SWITCH_UPD_LOCAL_PORT;
+	switch_infor.udp.uremote_port = SWTICH_ADV_PORT;
+	switch_infor.udp.ulocal_port = SWITCH_UPD_LOCAL_PORT;
 //	switch_infor.tcp_ip.addr = 0;
 	
-	ret = udp_client_init(switch_infor.udp_pcb, switch_rec_callback, switch_infor.udp_adv_ip, switch_infor.uremote_port, switch_infor.ulocal_port, &switch_infor);
+	ret = udp_client_init(switch_infor.udp.upcb, switch_rec_callback, switch_infor.udp.udp_adv_ip, switch_infor.udp.uremote_port, switch_infor.udp.ulocal_port, &switch_infor);
 	return ret;
 }
 //switch udp 接收
@@ -108,7 +114,7 @@ err_t switch_udp_Send(uint8_t *p, uint16_t len)
 {
 		err_t ret = ERR_OK;
 	
-		ret = udp_client_Send(switch_infor.udp_pcb, switch_infor.udp_adv_ip, switch_infor.uremote_port, p, len);
+		ret = udp_client_Send(switch_infor.udp.upcb, switch_infor.udp.udp_adv_ip, switch_infor.udp.uremote_port, p, len);
 		return ret;
 }
 
@@ -146,8 +152,8 @@ err_t Switch_TCP_Send(smart_switch_infor_t *es, uint8_t *msg, uint16_t len)
 err_t Switch_Tcp_Rec(struct tcp_pcb *tpcb,struct pbuf *p, void *arg, err_t err)
 {
 	uint8_t rec[256];
-	smart_switch_infor_t  *es;
-	es = (smart_switch_infor_t*)arg;
+	tcp_infor_t  *es;
+	es = (tcp_infor_t*)arg;
 	
 	printf("[SW]: tcp received\r\n");
 	if(p==NULL||(err!=ERR_OK))
