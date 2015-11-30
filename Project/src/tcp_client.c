@@ -68,7 +68,7 @@ static err_t TCP_Client_Connected(void *arg, struct tcp_pcb *tpcb, err_t err)
 		strcat(pb->payload,ConnectCmd);
 		strcat(pb->payload, (char*)ps->ptcp->mac);  //mac 没有结束\0,,验证
 		tcp_client_close(ps);
-		udp_client_Send(ps->pserver->upcb_server.upcb, ps->pserver->upcb_server.addr, ps->pserver->upcb_server.port, pb->payload, pb->len);
+		udp_client_Send(ps->pserver->sudp, ps->pserver->upcb_server.addr, ps->pserver->upcb_server.port, pb->payload, pb->len);
 	}
 	else
 	{

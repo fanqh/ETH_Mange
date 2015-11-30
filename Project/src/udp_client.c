@@ -8,44 +8,51 @@
 #include <stdio.h>
 #include "device_server.h"
 #include "lwip/opt.h"
+#include "udp_client.h"
 
 
-err_t udp_client_init(struct udp_pcb  *upcb, void (* recv)(void *arg, struct udp_pcb *upcb, struct pbuf *p,
-                     struct ip_addr *addr, u16_t port),struct ip_addr ip_addr, uint16_t remote_port, uint16_t local_port, void *arg)
+
+err_t udp_client_init(udp_struct_t *ut, void *arg)
 {
 	err_t ret = ERR_OK;
 //	upcb->local_port = UDP_CLIENT_PORT;
-	ret = udp_bind(upcb, IP_ADDR_ANY, local_port);
+	ret = udp_bind(ut->upcb, IP_ADDR_ANY, ut->ulocal_port);
 	if(ret!=ERR_OK)
-	{
-		udp_remove(upcb);
+	{	
+		ut->ustate = S_IDLE;
+		udp_remove(ut->upcb);
 		return ret;
 	}
-	udp_recv(upcb, recv, arg);
+	ut->ustate = S_CONNECTED;
+	udp_recv(ut->upcb, ut->recv, arg);
 	return ret;
 }
 
-err_t udp_client_Send(struct udp_pcb  *upcb, struct ip_addr ip_addr, uint16_t port, uint8_t *p, uint16_t len)
+//err_t udp_client_Send(struct udp_pcb  *upcb, struct ip_addr ip_addr, uint16_t port, uint8_t *p, uint16_t len)
+err_t udp_client_Send(udp_struct_t *ut, struct ip_addr *addr, uint8_t *p, uint16_t len)
 {
 		struct pbuf *pSend;
 		err_t ret = ERR_OK;
 	
+		if(ut->ustate==S_IDLE)
+			return ERR_CLSD;
+			
 		pSend = pbuf_alloc(PBUF_TRANSPORT, len, PBUF_RAM);
 		if(pSend==NULL)
 			return ERR_BUF;
 		pSend->payload = p;
 		pSend->tot_len = pSend->len = len;
 		
-		ret = udp_connect(upcb, &ip_addr, port);
+		ret = udp_connect(ut->upcb, addr, ut->uremote_port);
 		if(ret!=ERR_OK)
 		{
-			udp_remove(upcb);
+			udp_remove(ut->upcb);
 			return ret;
 		}
-		ret = udp_send(upcb, pSend); 
+		ret = udp_send(ut->upcb, pSend); 
 		if(ret!=ERR_OK)
 			printf("send failed\r\n");
-		udp_disconnect(upcb);
+		udp_disconnect(ut->upcb);
 		
 		pbuf_free(pSend);
 		return ret;

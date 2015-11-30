@@ -23,8 +23,9 @@
 smart_switch_infor_t switch_infor=
 {
 	0,
-	{0,0,SWTICH_ADV_PORT,SWITCH_UPD_LOCAL_PORT},//udp
+	{S_IDLE, 0,0,SWTICH_ADV_PORT,SWITCH_UPD_LOCAL_PORT,0},//udp
 	{0,S_IDLE,0,0,SWITCH_TCP_LOCAL_PORT,SWITCH_TCP_PORT,Switch_Tcp_Rec,{0}},//tcp
+	{0},
 	{0},
 	FALSE,
 	FALSE,
@@ -45,17 +46,18 @@ err_t Switch_Init(device_infor_t *pDev)
 	
 	err_t ret = ERR_OK;
 	
-	switch_infor.udp.udp_adv_ip.addr = Device_Infor.pnetif->gw.addr | 0xff000000;
+	switch_infor.adv_ip.addr = Device_Infor.pnetif->gw.addr | 0xff000000;
 	switch_infor.udp.upcb = udp_new();
 	if(switch_infor.udp.upcb==NULL)
 		return ERR_BUF;
 	pDev->udp_num++;
 	switch_infor.pdev = pDev;
-	switch_infor.udp.uremote_port = SWTICH_ADV_PORT;
-	switch_infor.udp.ulocal_port = SWITCH_UPD_LOCAL_PORT;
+	switch_infor.udp.recv = switch_rec_callback;
+//	switch_infor.udp.uremote_port = SWTICH_ADV_PORT;
+//	switch_infor.udp.ulocal_port = SWITCH_UPD_LOCAL_PORT;
 //	switch_infor.tcp_ip.addr = 0;
 	
-	ret = udp_client_init(switch_infor.udp.upcb, switch_rec_callback, switch_infor.udp.udp_adv_ip, switch_infor.udp.uremote_port, switch_infor.udp.ulocal_port, &switch_infor);
+	ret = udp_client_init(&switch_infor.udp, &switch_infor);
 	return ret;
 }
 //switch udp ½ÓÊÕ
@@ -98,7 +100,7 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	}
 	
 	
-	udp_client_Send(pserver->upcb_server.upcb, pserver->upcb_server.addr, pserver->upcb_server.port, p->payload, p->len);
+	udp_client_Send(&pserver->sudp, &pserver->sudp.uip, p->payload, p->len);
 	printf("[sw]: ");
 	for(i=0;i<p->len;i++)
 	{
@@ -110,11 +112,11 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 }
 
 //switch udp ·¢ËÍ
-err_t switch_udp_Send(uint8_t *p, uint16_t len)
+err_t switch_udp_Send(struct ip_addr *addr, uint8_t *p, uint16_t len)
 {
 		err_t ret = ERR_OK;
 	
-		ret = udp_client_Send(switch_infor.udp.upcb, switch_infor.udp.udp_adv_ip, switch_infor.udp.uremote_port, p, len);
+		ret = udp_client_Send(&switch_infor.udp, addr, p, len);
 		return ret;
 }
 

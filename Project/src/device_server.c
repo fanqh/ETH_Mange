@@ -11,6 +11,10 @@
 #include "revogi.h"
 #include "udp_client.h"
 #include "device_server.h"
+#include "netconf.h"
+
+
+#define MANAGE_UDP_SERVER_PORT  9009	
 
 /* Private typedef -----------------------------------------------------------*/
 struct FindCMDResp_t
@@ -41,8 +45,13 @@ uint8_t TripTurnoffCMD[] = "GET /?cmd=200&json={\"sn\":\"SWW6012003000015\",\"po
 /* Private function prototypes -----------------------------------------------*/
 static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
 
-Dev_Server_infor_t dev_Server_inf;
-
+Dev_Server_infor_t dev_Server_inf=
+{
+0,
+{S_IDLE,0,0,MANAGE_UDP_SERVER_PORT,MANAGE_UDP_SERVER_PORT,0},
+{0},
+0
+};
 
 
 
@@ -58,21 +67,20 @@ Dev_Server_infor_t* GetDev_server(void)
   */
 err_t udp_server_init(void *pd)
 {
-    err_t ret;
-	struct udp_pcb *upcb;                                 
+    err_t ret =ERR_OK ;                               
 
-	upcb = udp_new();
-	if(upcb==NULL)
+	dev_Server_inf.sudp.upcb = udp_new();
+	if(dev_Server_inf.sudp.upcb==NULL)
 		return ERR_BUF;
-	if((ret = udp_bind(upcb, IP_ADDR_ANY, MANAGE_UDP_SERVER_PORT))!=ERR_OK)
+	if((ret = udp_bind(dev_Server_inf.sudp.upcb, IP_ADDR_ANY, MANAGE_UDP_SERVER_PORT))!=ERR_OK)
 	{		
-		udp_remove(upcb);
+		udp_remove(dev_Server_inf.sudp.upcb);
 		return ret;
 	}
 	dev_Server_inf.arg = pd;
-	dev_Server_inf.upcb_server.upcb = upcb;
+	dev_Server_inf.sudp.recv = udp_server_callback;
 //	pd->udp_num++;
-	udp_recv(upcb, udp_server_callback, &dev_Server_inf);  
+	udp_recv(dev_Server_inf.sudp.upcb, udp_server_callback, &dev_Server_inf);  
 	return ret;
 }
 
@@ -102,10 +110,10 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 
 	
 	ps = (Dev_Server_infor_t*) arg;
-	if(ps->upcb_server.addr.addr!=addr->addr)
-		ps->upcb_server.addr.addr = addr->addr;
-	if(ps->upcb_server.port!=port)
-		ps->upcb_server.port = port;
+	if(ps->sudp.uip.addr!=addr->addr)
+		ps->sudp.uip.addr = addr->addr;
+	if(ps->sudp.uremote_port!=port)
+		ps->sudp.uremote_port = port;
 	ptr = (uint8_t*)strstr((char*)buff, FindCMD);
 	if(ptr)
 	{
@@ -137,6 +145,7 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		}
 			
 	}
+#if 0
 	else if(strstr((char*)buff, "find"))
 	{
 		uint8_t pw[2] = {0,0};
@@ -188,7 +197,8 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	{
 		PowerTrip_TCP_Send(&revogi_infor, TripTurnoffCMD, sizeof(TripTurnoffCMD)-1);
 	}
-	udp_client_Send(upcb, *addr, port, p->payload, p->len);
+	udp_client_Send(&ps->sudp, addr, p->payload, p->len);
+#endif
 	pbuf_free(p);
    
 }

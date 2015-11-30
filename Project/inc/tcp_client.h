@@ -4,6 +4,7 @@
 #include "netif.h"
 #include "device_server.h"
 #include "netconf.h"
+#include "net_type.h"
 
 
 typedef struct
