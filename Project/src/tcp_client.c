@@ -7,10 +7,13 @@
 #include <stdio.h>
 #include "netconf.h"
 #include "udp_client.h"
+//#include ""
 
 #define PACKAGE_MAX              256
 
-uint8_t ConnectCmd[] = "connect";
+char const ConnectCmd[] = "connect:";
+char const DisconnectCmd[] = "disconnect:";
+char const CloseCmd[] = "close:";
 
 
 static err_t Tcp_RecFun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
@@ -22,28 +25,27 @@ static void tcp_err_callback(void *arg, err_t err);
 err_t TCP_Client_Attemp_Connect(tcp_infor_t *ts)
 {
 	err_t ret = ERR_OK;
-    if(ts->state==S_IDLE)
+    if(ts->ptcp->tstate==S_IDLE)
 	{
-	    ts->tpcb = tcp_new();				//新建一个PCB	
-		ts->tpcb->so_options |= SOF_KEEPALIVE;
-		if(ts->tpcb==NULL)
+	    ts->ptcp->tpcb = tcp_new();				//新建一个PCB	
+		ts->ptcp->tpcb->so_options |= SOF_KEEPALIVE;
+		if(ts->ptcp->tpcb==NULL)
 			return ERR_BUF;
-		ts->state = S_CONNECTING;		
+		ts->ptcp->tstate = S_CONNECTING;		
 	}
 	
-	ret = tcp_bind(ts->tpcb, IP_ADDR_ANY, ts->local_port);
+	ret = tcp_bind(ts->ptcp->tpcb, IP_ADDR_ANY, ts->ptcp->tlocal_port);
 //	if(ret!=ERR_OK)
 //		return ret;
-	ret = tcp_connect(ts->tpcb, &(ts->ip), ts->remote_port, TCP_Client_Connected);
+	ret = tcp_connect(ts->ptcp->tpcb, &(ts->ptcp->tip), ts->ptcp->tremote_port, TCP_Client_Connected);
 	if(ret==ERR_OK)
 	{
-		tcp_arg(ts->tpcb, ts);  //回调函数参数传递
-		tcp_err(ts->tpcb, tcp_err_callback);
+		tcp_arg(ts->ptcp->tpcb, ts);  //回调函数参数传递
+		tcp_err(ts->ptcp->tpcb, tcp_err_callback);
 	}
-	ts->retry = 0;
+	ts->ptcp->retry = 0;
 	return ret;	
 }
-
 //客户端成功连接到远程主机时调用
 static err_t TCP_Client_Connected(void *arg, struct tcp_pcb *tpcb, err_t err)
 {
@@ -51,20 +53,29 @@ static err_t TCP_Client_Connected(void *arg, struct tcp_pcb *tpcb, err_t err)
 	
 	ps = (tcp_infor_t*) arg;
 	if(err==ERR_OK)
-	{
-		ps->retry = 0;
-		ps->state = S_CONNECTED;
-		tcp_arg(ps->tpcb, ps);  //回调函数参数传递
-		tcp_recv(ps->tpcb, Tcp_RecFun);	//指定连接接收到新的数据之后将要调用的回调函数 
-		tcp_write(ps->tpcb, ConnectCmd, sizeof(ConnectCmd), 1);
-//		udp_client_Send(ps->, *addr, port, p->payload, p->len);
+	{	
+		struct pbuf *pb;
+		
+		ps->ptcp->retry = 0;
+		ps->ptcp->tstate = S_CONNECTED;
+		tcp_arg(ps->ptcp->tpcb, ps);  //回调函数参数传递
+		tcp_recv(ps->ptcp->tpcb, Tcp_RecFun);	//指定连接接收到新的数据之后将要调用的回调函数 
+//		tcp_write(ps->ptcp->tpcb, ConnectCmd, sizeof(ConnectCmd), 1);
+		
+		pb = pbuf_alloc(PBUF_TRANSPORT, PACKAGE_MAX, PBUF_RAM);
+		memset(pb, 0,PACKAGE_MAX);
+		memcpy(pb->payload, ConnectCmd, sizeof(ConnectCmd));
+		strcat(pb->payload,ConnectCmd);
+		strcat(pb->payload, (char*)ps->ptcp->mac);  //mac 没有结束\0,,验证
+		tcp_client_close(ps);
+		udp_client_Send(ps->pserver->upcb_server.upcb, ps->pserver->upcb_server.addr, ps->pserver->upcb_server.port, pb->payload, pb->len);
 	}
 	else
 	{
-		ps->state = S_CLOSED;
-		tcp_arg(ps->tpcb, NULL);  			
-		tcp_recv(ps->tpcb, NULL);
-		tcp_close(ps->tpcb); 
+		ps->ptcp->tstate = S_CLOSED;
+//		tcp_arg(ps->ptcp->tpcb, NULL);  			
+//		tcp_recv(ps->ptcp->tpcb, NULL);
+//		tcp_close(ps->ptcp->tpcb); 
 		TCP_Client_Attemp_Connect(ps); //直接去链接，还是需要等待一段时间链接，需测试
 //		set_timer4_countTime(TIMER_5000MS); 
 	}
@@ -85,13 +96,21 @@ static void tcp_err_callback(void *arg, err_t err)
 	else
 	{
 		printf("[tcp_client]: ERR %d\r\n", err);
-		ps->retry ++;
-		if(ps->retry<5)
+		ps->ptcp->retry ++;
+		if(ps->ptcp->retry<5)
 			TCP_Client_Attemp_Connect(ps); //直接去链接，还是需要等待一段时间链接，需要测试
 			//set_timer4_countTime(TIMER_5000MS);
 		else
 		{
+			struct pbuf *pb;
+			
+			pb = pbuf_alloc(PBUF_TRANSPORT, PACKAGE_MAX, PBUF_RAM);
+			memset(pb, 0,PACKAGE_MAX);
+			memcpy(pb->payload, DisconnectCmd, sizeof(DisconnectCmd));
+			strcat(pb->payload,DisconnectCmd);
+			strcat(pb->payload, (char*)ps->ptcp->mac);  //mac 没有结束\0,,验证
 			tcp_client_close(ps);
+			udp_client_Send(ps->pserver->upcb_server.upcb, ps->pserver->upcb_server.addr, ps->pserver->upcb_server.port, pb->payload, pb->len);
 		}
 		
 	}
@@ -99,15 +118,23 @@ static void tcp_err_callback(void *arg, err_t err)
 
 void tcp_client_close( tcp_infor_t* ts)
 {
+	struct pbuf *pb;
 	if(ts!=NULL)
 	{
-		ts->state = S_CLOSED;
-		tcp_arg(ts->tpcb, NULL);  			
-		tcp_recv(ts->tpcb, NULL);
-		tcp_poll(ts->tpcb, NULL, 0); 
-		tcp_close(ts->tpcb);
+		ts->ptcp->tstate = S_CLOSED;
+		tcp_arg(ts->ptcp->tpcb, NULL);  			
+		tcp_recv(ts->ptcp->tpcb, NULL);
+		tcp_poll(ts->ptcp->tpcb, NULL, 0); 
+		tcp_close(ts->ptcp->tpcb);
 //		memset(ts, 0 , sizeof(tcp_infor_t));
-	}
+	}		
+	pb = pbuf_alloc(PBUF_TRANSPORT, PACKAGE_MAX, PBUF_RAM);
+	memset(pb, 0,PACKAGE_MAX);
+	memcpy(pb->payload, DisconnectCmd, sizeof(DisconnectCmd));
+	strcat(pb->payload,DisconnectCmd);
+	strcat(pb->payload, (char*)ts->ptcp->mac);  //mac 没有结束\0,,验证
+	tcp_client_close(ts);
+	udp_client_Send(ts->pserver->upcb_server.upcb, ts->pserver->upcb_server.addr, ts->pserver->upcb_server.port, pb->payload, pb->len);
 }
 
 static err_t Tcp_RecFun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
@@ -122,12 +149,12 @@ static err_t Tcp_RecFun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
 	}
 	else
 	{
-		ts->state = S_RECEIVE;
-		ts->recv(tpcb,p,arg);
-		ts->state = S_CLOSED;
+		ts->ptcp->tstate = S_RECEIVE;
+		ts->ptcp->recv(tpcb, p, arg, err);
 		udp_client_Send(ts->pserver->upcb_server.upcb, ts->pserver->upcb_server.addr, ts->pserver->upcb_server.port, p->payload, p->len);
 		pbuf_free(p);
 	}
+	ts->ptcp->tstate = S_CLOSED;
 	tcp_client_close(ts);
 	return err;
 }
@@ -139,7 +166,7 @@ err_t TCP_Send(tcp_infor_t *es, uint8_t *msg, uint16_t len)
 	
 	if(es==NULL)
 		return ERR_VAL;
-	if(es->state!=S_CONNECTED)
+	if(es->ptcp->tstate!=S_CONNECTED)
 		return ERR_CLSD;
 	ptr = pbuf_alloc(PBUF_TRANSPORT, PACKAGE_MAX, PBUF_RAM);
 	if(ptr==NULL)
@@ -148,9 +175,9 @@ err_t TCP_Send(tcp_infor_t *es, uint8_t *msg, uint16_t len)
 	ptr->len = ptr->tot_len = len;
 	
 	
-	while(ptr->len<=tcp_sndbuf(es->tpcb)&&(wr_err == ERR_OK)&&(ptr!=NULL))
+	while(ptr->len<=tcp_sndbuf(es->ptcp->tpcb)&&(wr_err == ERR_OK)&&(ptr!=NULL))
 	{
-		wr_err = tcp_write(es->tpcb, ptr->payload, ptr->len, 1); 
+		wr_err = tcp_write(es->ptcp->tpcb, ptr->payload, ptr->len, 1); 
 		if(wr_err==ERR_OK)
 		{
 			ptr = ptr->next;

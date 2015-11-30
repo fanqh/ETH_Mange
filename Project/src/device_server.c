@@ -37,12 +37,10 @@ uint8_t Switch_RealTimeCMD[] = "AT+YZSWITCH=1,ON,201511222133\r\n";
 uint8_t TripFindCMD[] = "00sw=all,2015-11-27,21:16:39,+8";
 uint8_t TripTurnoffCMD[] = "GET /?cmd=200&json={\"sn\":\"SWW6012003000015\",\"port\":0,\"state\":1} HTTP/1.1\r\nHost: 192.168.0.103";
 
-/* Private macro -------------------------------------------------------------*/
-/* Private variables ---------------------------------------------------------*/
+
 /* Private function prototypes -----------------------------------------------*/
 static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
-err_t tcp_server_accept(void *arg, struct tcp_pcb *pcb, err_t err);
-static err_t tcp_server_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err);
+
 
 
 Dev_Server_infor_t dev_Server_inf;
@@ -60,7 +58,7 @@ Dev_Server_infor_t* GetDev_server(void)
   * @param  None
   * @retval None
   */
-err_t udp_server_init(device_infor_t *pd)
+err_t udp_server_init(void *pd)
 {
     err_t ret;
 	struct udp_pcb *upcb;                                 
@@ -73,9 +71,9 @@ err_t udp_server_init(device_infor_t *pd)
 		udp_remove(upcb);
 		return ret;
 	}
-	dev_Server_inf.pDevInfor = pd;
+	dev_Server_inf.arg = pd;
 	dev_Server_inf.upcb_server.upcb = upcb;
-	pd->udp_num++;
+//	pd->udp_num++;
 	udp_recv(upcb, udp_server_callback, &dev_Server_inf);  
 	return ret;
 }
@@ -197,64 +195,4 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
    
 }
 
-/**
-  * @brief  This funtion is called when a TCP connection has been established on the port TCP_PORT.
-  * @param  arg	user supplied argument 
-  * @param  pcb	the tcp_pcb which accepted the connection
-  * @param  err error value
-  * @retval ERR_OK
-  */
-err_t tcp_server_accept(void *arg, struct tcp_pcb *pcb, err_t err)
-{ 
-  /* Specify the function that should be called when the TCP connection receives data */
-  tcp_recv(pcb, tcp_server_recv);
 
-  return ERR_OK;  
-}
-
-/**
-  * @brief  This function is called when a data is received over the TCP_PORT.
-  *         The received data contains the number of the led to be toggled.
-  * @param  arg	user supplied argument 
-  * @param  pcb	the tcp_pcb which accepted the connection
-  * @param  p the packet buffer that was received
-  * @param  err error value
-  * @retval ERR_OK
-  */
-static err_t tcp_server_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
-{
-  char data;
-
-  /* Read the led number */
-  data = *(((char *)p->payload));  
-
-  /* Toggle the specified led */
-  switch (data)
-  {
-  	case LED1:
-	    STM_EVAL_LEDToggle(LED1);
-		break;
-	
-	case LED2:
-	    STM_EVAL_LEDToggle(LED2);
-		break;
-	
-	case LED3:
-	    STM_EVAL_LEDToggle(LED3);
-		break;
-	
-	case LED4:
-	    STM_EVAL_LEDToggle(LED4);
-		break;
-	
-	default:
-		break;
-  }
-
-  /* Free the p buffer */
-  pbuf_free(p);
-
-  return ERR_OK;
-}
-
-/******************* (C) COPYRIGHT 2009 STMicroelectronics *****END OF FILE****/

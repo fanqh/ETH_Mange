@@ -210,7 +210,7 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 		#if LWIP_DHCP
 		if (netif.flags & NETIF_FLAG_DHCP)
 		{        
-		  Device_Infor.p = GetDev_server();
+		  Device_Infor.server = GetDev_server();
 		  Device_Infor.pnetif = &netif;
 		  ETH_GetMACAddress(0, Device_Infor.macaddr);
 		  Device_Infor.ConnectState = 1;

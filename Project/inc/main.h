@@ -31,6 +31,17 @@
 #include "stm32f10x.h"
 #include "stm32f107.h"
 
+//typedef struct
+//{
+//	struct netif *pnetif;
+//	uint8_t macaddr[6];
+//	uint8_t ConnectState;
+//	uint8_t tcp_num;
+//	uint8_t udp_num;
+//	Dev_Server_infor_t *server;
+//	
+//}device_infor_t; 
+
 /* Exported function prototypes ----------------------------------------------*/
 void Time_Update(void);
 void Delay(uint32_t nCount);

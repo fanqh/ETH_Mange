@@ -24,7 +24,7 @@
 #define __NETCONF_H
 #include "stm32f10x.h"
 #include "netif.h"
-//#include "device_server.h"
+#include "device_server.h"
 
 #ifdef __cplusplus
  extern "C" {
@@ -32,6 +32,30 @@
 	 
 #define MANAGE_UDP_SERVER_PORT  9009	 
 #define DEBUG printf
+	 
+typedef enum
+{
+	S_IDLE,
+	S_CONNECTING,
+	S_CONNECTED,
+	S_CLOSING,
+	S_CLOSED,
+	S_SEND,
+	S_RECEIVE,
+	
+}tcp_state_t;	
+
+typedef struct
+{
+	uint16_t retry;
+	tcp_state_t tstate;
+	struct ip_addr  tip;
+	struct tcp_pcb  *tpcb;
+	uint16_t tlocal_port;
+	uint16_t tremote_port;
+	err_t (* recv)(struct tcp_pcb *tpcb,struct pbuf *p,void *arg, err_t err);
+	uint8_t mac[12];	
+}tcp_struct_t;
 	 
 typedef struct
 {
@@ -43,7 +67,7 @@ typedef struct
 	uint8_t ConnectState;
 	uint8_t tcp_num;
 	uint8_t udp_num;
-	void *p;
+	Dev_Server_infor_t *server;
 	
 }device_infor_t; 	 
 

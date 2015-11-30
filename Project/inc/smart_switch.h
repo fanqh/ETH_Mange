@@ -7,29 +7,49 @@
 #include "netconf.h"
 #include "device_server.h"
 
-typedef enum
+
+/*
+typedef struct
 {
-	UNUSE = 0,
-	FIND,
-	DISCONNECT,
-	CONNECTED	
-}Sw_Infor_State_t;
+	tcp_state_t state;
+
+	struct tcp_pcb *tpcb;	
+	struct ip_addr  ip;
+	uint16_t local_port;
+	uint16_t remote_port;
+	uint16_t retry;
+	err_t (* recv)(struct tcp_pcb *tpcb,struct pbuf *p,void *arg);
+	Dev_Server_infor_t *pserver;
+	
+}tcp_infor_t;
+*/
 
 typedef struct
 {	
-	Sw_Infor_State_t sw_state;
+//	Sw_Infor_State_t sw_state;
 	uint8_t connect_count;
+	
+	
 	struct ip_addr  udp_adv_ip;
-	struct ip_addr  tcp_ip;
 	struct udp_pcb  *udp_pcb;
-	struct tcp_pcb  *tcp_pcb;
-	struct pbuf *p;
-	uint8_t mac[12];
+	uint16_t uremote_port;
+	uint16_t ulocal_port;
+	
+	tcp_struct_t tcp;
+//	uint16_t retry;
+//	tcp_state_t tstate;
+//	struct ip_addr  tip;
+//	struct tcp_pcb  *tpcb;
+//	uint16_t tlocal_port;
+//	uint16_t tremote_port;
+//	err_t (* recv)(struct tcp_pcb *tpcb,struct pbuf *p,void *arg);
+//	uint8_t mac[12];
+//	struct pbuf *p;
+	
 	uint8_t sn[9];
 	bool is_online;
 	bool state;
-	uint16_t udp_local_port;
-	uint16_t udp_remote_port;
+
 	device_infor_t  *pdev;
 }smart_switch_infor_t;
 
