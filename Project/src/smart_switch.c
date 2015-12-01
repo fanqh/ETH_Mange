@@ -20,16 +20,28 @@
 #define PACKAGE_MAX              256
 
 
+static void  connectedf(void *arg);
+static void connecterrf(void *arg);
+static void connectclose(void *arg);
+static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
+err_t Switch_Tcp_Rec(struct pbuf *tpcb,void *arg, err_t err);
+
+
+const char connectedcmd[] = "connnect:";
+const char connecterrcmd[] = "connecterr:";
+const char closecmd[] = "close:";
+
 smart_switch_infor_t switch_infor=
 {
 	0,
-	{S_IDLE, 0,0,SWTICH_ADV_PORT,SWITCH_UPD_LOCAL_PORT,0},//udp
-	{0,S_IDLE,0,0,SWITCH_TCP_LOCAL_PORT,SWITCH_TCP_PORT,Switch_Tcp_Rec,{0}},//tcp
-	{0}, //adv_ip
-	{0},
-	FALSE,
-	FALSE,
-	0
+	{{S_IDLE, 0,0,SWTICH_ADV_PORT,SWITCH_UPD_LOCAL_PORT,switch_rec_callback},//udp
+	{0,S_IDLE,{0},0,SWITCH_TCP_LOCAL_PORT,SWITCH_TCP_PORT,Switch_Tcp_Rec,connectedf,connecterrf,connectclose}},//tcp
+	{{0}, //mac
+	{0},  //sn
+	FALSE,//online
+	FALSE},//state
+	{0},     //adv_ip
+	0     //pdev
 };
 struct ip_addr adv_ip;
 uint8_t udp_init =0;
@@ -47,18 +59,14 @@ err_t Switch_Init(device_infor_t *pDev)
 	err_t ret = ERR_OK;
 	
 	switch_infor.adv_ip.addr = Device_Infor.pnetif->gw.addr | 0xff000000;
-	switch_infor.udp.upcb = udp_new();
-	if(switch_infor.udp.upcb==NULL)
+	switch_infor.netlink.udp.upcb = udp_new();
+	if(switch_infor.netlink.udp.upcb==NULL)
 		return ERR_BUF;
 	pDev->udp_num++;
 	switch_infor.pdev = pDev;
-	switch_infor.udp.recv = switch_rec_callback;
-	switch_infor.tcp.arg = pDev->server;
-//	switch_infor.udp.uremote_port = SWTICH_ADV_PORT;
-//	switch_infor.udp.ulocal_port = SWITCH_UPD_LOCAL_PORT;
-//	switch_infor.tcp_ip.addr = 0;
+	switch_infor.pdev = pDev;
 	
-	ret = udp_client_init(&switch_infor.udp, &switch_infor);
+	ret = udp_client_init(&switch_infor.netlink.udp, &switch_infor);
 	return ret;
 }
 //switch udp 接收
@@ -77,28 +85,29 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	printf("[sw]: broadcast ip: %X\r\n", (uint32_t)addr->addr);
 	memset(rec,0,PACKAGE_MAX);
 	memcpy(rec, p->payload, p->len);
+#if 1
 	if((NumofStr(rec, '.')==3)&&(NumofStr(rec, ',')==5))
 	{
 		if(inet_aton(rec, (struct in_addr*)&ip_addr)==0)
 			return;
 		if(ip_addr.addr!=addr->addr)
 			return;
-		switch_infor.tcp.tip.addr = ip_addr.addr;
-		switch_infor.udp.uip.addr = ip_addr.addr;
+		pSw->netlink.udp.uip.addr = ip_addr.addr;
+		pSw->netlink.tcp.tip.addr = ip_addr.addr;
 		
 		ptr = strstr((char*)rec, ",");
 		if(ptr==NULL)
 			return;
-		memcpy(switch_infor.tcp.mac, ptr+1,12);
+		memcpy(pSw->smartplug_comm.mac, ptr+1,12);
 		ptr = strstr((char*)(ptr+1),",");
 		if(ptr==NULL)
 			return;
-		memcpy(switch_infor.sn,ptr+1,9);
+		memcpy(switch_infor.smartplug_comm.sn,ptr+1,9);
 		ptr = strstr((char*)(ptr+10),",");
 		if(ptr==NULL)
 			return;
-		switch_infor.is_online =(bool) *(ptr+1);
-		switch_infor.state =(bool) *(ptr+3);
+		switch_infor.smartplug_comm.is_online =(bool) *(ptr+1);
+		switch_infor.smartplug_comm.state =(bool) *(ptr+3);
 	}
 	
 	
@@ -109,17 +118,58 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		printf(" %X",rec[i] );
 	}
 	printf("\r\n");
-
+#endif
   pbuf_free(p);
+}
+
+
+static void  connectedf(void *arg)
+{
+	tcp_struct_t  *ts;
+	struct pbuf *p;
+	
+	ts = (tcp_struct_t*)arg;
+	p = pbuf_alloc(PBUF_TRANSPORT, PACKAGE_MAX, PBUF_RAM);
+	
+	memcpy(p->payload,connectedcmd,sizeof(connectedcmd));
+	p->tot_len = p->len = sizeof(connectedcmd);
+	udp_client_Send(&switch_infor.pdev->server->sudp, switch_infor.pdev->server->sudp.uip, p->payload, p->len);
+	pbuf_free(p);
+}	
+static void connecterrf(void *arg)
+{
+	tcp_struct_t  *ts;
+	struct pbuf *p;
+	
+	ts = (tcp_struct_t*)arg;
+	p = pbuf_alloc(PBUF_TRANSPORT, PACKAGE_MAX, PBUF_RAM);
+	
+	memcpy(p->payload,connecterrcmd,sizeof(connecterrcmd));
+	p->tot_len = p->len = sizeof(connecterrcmd);
+	udp_client_Send(&switch_infor.pdev->server->sudp, switch_infor.pdev->server->sudp.uip, p->payload, p->len);
+	pbuf_free(p);
+}
+static void connectclose(void *arg)
+{
+	tcp_struct_t  *ts;
+	struct pbuf *p;
+	
+	ts = (tcp_struct_t*)arg;
+	p = pbuf_alloc(PBUF_TRANSPORT, PACKAGE_MAX, PBUF_RAM);
+	
+	memcpy(p->payload,closecmd,sizeof(closecmd));
+	p->tot_len = p->len = sizeof(closecmd);
+	udp_client_Send(&switch_infor.pdev->server->sudp, switch_infor.pdev->server->sudp.uip, p->payload, p->len);
+	pbuf_free(p);
 }
 
 //switch udp 发送
 err_t switch_udp_Send(struct ip_addr addr, uint8_t *p, uint16_t len)
 {
-		err_t ret = ERR_OK;
-	
-		ret = udp_client_Send(&switch_infor.udp, addr, p, len);
-		return ret;
+	err_t ret = ERR_OK;
+
+	ret = udp_client_Send(&switch_infor.netlink.udp, addr, p, len);
+	return ret;
 }
 
 
@@ -127,37 +177,28 @@ err_t switch_udp_Send(struct ip_addr addr, uint8_t *p, uint16_t len)
 //初始化TCP客户端
 err_t Switch_TCP_Client_Attemp_Connect(smart_switch_infor_t  *ps)
 {	
-	tcp_struct_t *ts;
-//	ts->pserver = ps->pdev->server;
-//	ts->ptcp = &(ps->tcp);
-	return  TCP_Client_Attemp_Connect1();
+	return TCP_Client_Attemp_Connect(&ps->netlink.tcp);
 }
 
 //关闭TCP链接
 void Switch_TCP_Client_Close( smart_switch_infor_t* ss)
-{
-	tcp_infor_t *ts;
-	
-	ts->ptcp = &(ss->tcp);
-	
-	tcp_client_close(ts);
+{	
+	tcp_client_close(&ss->netlink.tcp);
 }
 
 err_t Switch_TCP_Send(smart_switch_infor_t *es, uint8_t *msg, uint16_t len)
 {
-	tcp_infor_t *ts;
-
 	if(es==NULL)
 		return ERR_VAL;
-	if((ts->ptcp=&(es->tcp))==NULL)
+	if(&es->netlink.tcp==NULL)
 		return ERR_VAL;
-	return TCP_Send(ts, msg, len);
+	return TCP_Send(&es->netlink.tcp, msg, len);
 }
-err_t Switch_Tcp_Rec(struct tcp_pcb *tpcb,struct pbuf *p, void *arg, err_t err)
+err_t Switch_Tcp_Rec(struct pbuf *p, void *arg, err_t err)
 {
 	uint8_t rec[256];
-	tcp_infor_t  *es;
-	es = (tcp_infor_t*)arg;
+	tcp_struct_t  *es;
+	es = (tcp_struct_t*)arg;
 	
 	printf("[SW]: tcp received\r\n");
 	if(p==NULL||(err!=ERR_OK))
@@ -169,7 +210,7 @@ err_t Switch_Tcp_Rec(struct tcp_pcb *tpcb,struct pbuf *p, void *arg, err_t err)
 		if(p->tot_len >=256)
 			p->tot_len = 256;
 		memcpy(rec, (uint8_t*)(p->payload), p->len);	
-		memcpy(rec, (uint8_t*)(p->payload), p->tot_len);
+		udp_client_Send(&switch_infor.pdev->server->sudp, switch_infor.pdev->server->sudp.uip, p->payload, p->len);
 		pbuf_free(p); 
 	}
 	return err;

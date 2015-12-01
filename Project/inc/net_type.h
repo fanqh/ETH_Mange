@@ -24,8 +24,11 @@ typedef struct
 	struct tcp_pcb  *tpcb;
 	uint16_t tlocal_port;
 	uint16_t tremote_port;
-	err_t (* recv)(struct tcp_pcb *tpcb,struct pbuf *p,void *arg, err_t err);
-	uint8_t mac[12];	
+	err_t (* recv)(struct pbuf *p,void *arg, err_t err);
+	void (* connectedf)(void *arg);	
+	void (*connecterrf)(void *arg);
+	void (*connectclose)(void *arg);
+	
 	void *arg;
 }tcp_struct_t;
 

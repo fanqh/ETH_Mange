@@ -175,16 +175,14 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	}	
 	else if(strstr((char*)buff,"connect"))
 	{
-		//pSwitch_infor.tcp_ip.addr  = 0x6600A8C0; 
-	//		pSwitch_infor.tcp_ip.addr  = 0xf801010A;
 		Switch_TCP_Client_Attemp_Connect(&switch_infor);
-		printf("remote: %d\r\n", switch_infor.tcp.tremote_port);
+//		printf("remote: %d\r\n", switch_infor.tcp.tremote_port);
 		
 	}
 	else if(strstr((char*)buff,"tcp"))
 	{
 		err_t ret;
-		ret = Switch_TCP_Send(&switch_infor, Switch_RealTimeCMD, sizeof(Switch_RealTimeCMD));
+		ret = Switch_TCP_Send(&switch_infor, Switch_RealTimeCMD, sizeof(Switch_RealTimeCMD)-1);
 		if(ret!=ERR_OK)
 			printf("send err\r\n");
 	}
