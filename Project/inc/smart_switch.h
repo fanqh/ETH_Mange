@@ -30,7 +30,13 @@ typedef struct
 }tcp_struct_t;
 
 */
-
+typedef struct
+{
+	uint8_t mac[12];
+	uint8_t sn[9];
+	bool is_online;
+	bool state;
+}switch_comm_t;
 
 
 typedef struct
