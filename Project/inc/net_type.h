@@ -26,6 +26,7 @@ typedef struct
 	uint16_t tremote_port;
 	err_t (* recv)(struct tcp_pcb *tpcb,struct pbuf *p,void *arg, err_t err);
 	uint8_t mac[12];	
+	void *arg;
 }tcp_struct_t;
 
 typedef struct
@@ -37,6 +38,13 @@ typedef struct
 	uint16_t ulocal_port;
 	void (* recv)(void *arg, struct udp_pcb *upcb, struct pbuf *p,struct ip_addr *addr, u16_t port);
 }udp_struct_t;
+
+typedef struct
+{
+	udp_struct_t udp;
+	tcp_struct_t tcp;
+	
+}netlink_struct_t;
 
 #endif
 

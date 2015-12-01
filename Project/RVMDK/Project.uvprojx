@@ -10,11 +10,12 @@
       <TargetName>SmartMange</TargetName>
       <ToolsetNumber>0x4</ToolsetNumber>
       <ToolsetName>ARM-ADS</ToolsetName>
+      <pCCUsed>5060061::V5.06 update 1 (build 61)::ARMCC</pCCUsed>
       <TargetOption>
         <TargetCommonOption>
           <Device>STM32F107VC</Device>
           <Vendor>STMicroelectronics</Vendor>
-          <PackID>Keil.STM32F1xx_DFP.1.1.0</PackID>
+          <PackID>Keil.STM32F1xx_DFP.2.0.0</PackID>
           <PackURL>http://www.keil.com/pack/</PackURL>
           <Cpu>IROM(0x08000000,0x40000) IRAM(0x20000000,0x10000) CPUTYPE("Cortex-M3") CLOCK(12000000) ELITTLE</Cpu>
           <FlashUtilSpec></FlashUtilSpec>
@@ -84,6 +85,8 @@
             <UserProg2Name></UserProg2Name>
             <UserProg1Dos16Mode>0</UserProg1Dos16Mode>
             <UserProg2Dos16Mode>0</UserProg2Dos16Mode>
+            <nStopA1X>0</nStopA1X>
+            <nStopA2X>0</nStopA2X>
           </AfterMake>
           <SelectedForBatchBuild>0</SelectedForBatchBuild>
           <SVCSIdString></SVCSIdString>
@@ -227,6 +230,7 @@
             <useUlib>1</useUlib>
             <EndSel>0</EndSel>
             <uLtcg>0</uLtcg>
+            <nSecure>0</nSecure>
             <RoSelD>3</RoSelD>
             <RwSelD>3</RwSelD>
             <CodeSel>0</CodeSel>
@@ -361,6 +365,10 @@
             <uSurpInc>0</uSurpInc>
             <uC99>0</uC99>
             <useXO>0</useXO>
+            <v6Lang>0</v6Lang>
+            <v6LangP>0</v6LangP>
+            <vShortEn>0</vShortEn>
+            <vShortWch>0</vShortWch>
             <VariousControls>
               <MiscControls>--diag_suppress 236</MiscControls>
               <Define>USE_STDPERIPH_DRIVER, STM32F10X_CL, USE_STM3210C_EVAL,SERVER</Define>
@@ -498,11 +506,6 @@
               <FileType>1</FileType>
               <FilePath>..\src\tcp_client.c</FilePath>
             </File>
-            <File>
-              <FileName>broadlink.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\src\broadlink.c</FilePath>
-            </File>
           </Files>
         </Group>
         <Group>
@@ -626,6 +629,10 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
+                    <v6Lang>0</v6Lang>
+                    <v6LangP>0</v6LangP>
+                    <vShortEn>0</vShortEn>
+                    <vShortWch>0</vShortWch>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -929,6 +936,10 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
+                    <v6Lang>0</v6Lang>
+                    <v6LangP>0</v6LangP>
+                    <vShortEn>0</vShortEn>
+                    <vShortWch>0</vShortWch>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -977,6 +988,10 @@
                     <uSurpInc>2</uSurpInc>
                     <uC99>2</uC99>
                     <useXO>2</useXO>
+                    <v6Lang>0</v6Lang>
+                    <v6LangP>0</v6LangP>
+                    <vShortEn>0</vShortEn>
+                    <vShortWch>0</vShortWch>
                     <VariousControls>
                       <MiscControls></MiscControls>
                       <Define></Define>
@@ -996,6 +1011,101 @@
               <FileName>startup_stm32f10x_cl.s</FileName>
               <FileType>2</FileType>
               <FilePath>..\..\Libraries\CMSIS\Core\CM3\startup\arm\startup_stm32f10x_cl.s</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>inc</GroupName>
+          <Files>
+            <File>
+              <FileName>ARMJISHU_TouchScreen.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\ARMJISHU_TouchScreen.h</FilePath>
+            </File>
+            <File>
+              <FileName>broadlink.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\broadlink.h</FilePath>
+            </File>
+            <File>
+              <FileName>device_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\device_config.h</FilePath>
+            </File>
+            <File>
+              <FileName>device_server.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\device_server.h</FilePath>
+            </File>
+            <File>
+              <FileName>eth_mange.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\eth_mange.h</FilePath>
+            </File>
+            <File>
+              <FileName>i2c_ee.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\i2c_ee.h</FilePath>
+            </File>
+            <File>
+              <FileName>main.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\main.h</FilePath>
+            </File>
+            <File>
+              <FileName>net_type.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\net_type.h</FilePath>
+            </File>
+            <File>
+              <FileName>netconf.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\netconf.h</FilePath>
+            </File>
+            <File>
+              <FileName>revogi.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\revogi.h</FilePath>
+            </File>
+            <File>
+              <FileName>smart_switch.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\smart_switch.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_conf.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\stm32f10x_conf.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f10x_it.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\stm32f10x_it.h</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f107.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\stm32f107.h</FilePath>
+            </File>
+            <File>
+              <FileName>tcp_client.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\tcp_client.h</FilePath>
+            </File>
+            <File>
+              <FileName>uart_printf.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\uart_printf.h</FilePath>
+            </File>
+            <File>
+              <FileName>udp_client.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\udp_client.h</FilePath>
+            </File>
+            <File>
+              <FileName>usart.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\inc\usart.h</FilePath>
             </File>
           </Files>
         </Group>

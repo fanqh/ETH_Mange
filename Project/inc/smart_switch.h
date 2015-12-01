@@ -31,6 +31,8 @@ typedef struct
 
 */
 
+
+
 typedef struct
 {	
 	uint8_t connect_count;
@@ -50,7 +52,7 @@ typedef struct
 extern smart_switch_infor_t switch_infor;
 
 err_t Switch_Init(device_infor_t *pDev);
-err_t switch_udp_Send(struct ip_addr *addr, uint8_t *p, uint16_t len);
+err_t switch_udp_Send(struct ip_addr addr, uint8_t *p, uint16_t len);
 
 err_t Switch_TCP_Client_Attemp_Connect(smart_switch_infor_t  *ps);
 //static err_t Switch_TCP_Client_Connected(void *arg, struct tcp_pcb *tpcb, err_t err);

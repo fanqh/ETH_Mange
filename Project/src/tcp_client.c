@@ -20,6 +20,10 @@ static err_t Tcp_RecFun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
 static err_t TCP_Client_Connected(void *arg, struct tcp_pcb *tpcb, err_t err);
 static void tcp_err_callback(void *arg, err_t err);
 
+err_t TCP_Client_Attemp_Connect1(void)
+{
+	return ERR_OK;
+}
 
 //初始化TCP客户端
 err_t TCP_Client_Attemp_Connect(tcp_infor_t *ts)
@@ -33,10 +37,10 @@ err_t TCP_Client_Attemp_Connect(tcp_infor_t *ts)
 			return ERR_BUF;
 		ts->ptcp->tstate = S_CONNECTING;		
 	}
-	
 	ret = tcp_bind(ts->ptcp->tpcb, IP_ADDR_ANY, ts->ptcp->tlocal_port);
-//	if(ret!=ERR_OK)
-//		return ret;
+	printf("local port : %d, remote port: %d\r\n", ts->ptcp->tlocal_port, ts->ptcp->tremote_port);
+	if(ret!=ERR_OK)
+		return ret;
 	ret = tcp_connect(ts->ptcp->tpcb, &(ts->ptcp->tip), ts->ptcp->tremote_port, TCP_Client_Connected);
 	if(ret==ERR_OK)
 	{
@@ -68,7 +72,7 @@ static err_t TCP_Client_Connected(void *arg, struct tcp_pcb *tpcb, err_t err)
 		strcat(pb->payload,ConnectCmd);
 		strcat(pb->payload, (char*)ps->ptcp->mac);  //mac 没有结束\0,,验证
 		tcp_client_close(ps);
-		udp_client_Send(ps->pserver->sudp, ps->pserver->upcb_server.addr, ps->pserver->upcb_server.port, pb->payload, pb->len);
+		udp_client_Send(&ps->pserver->sudp, ps->pserver->sudp.uip, pb->payload, pb->len);
 	}
 	else
 	{
@@ -110,7 +114,7 @@ static void tcp_err_callback(void *arg, err_t err)
 			strcat(pb->payload,DisconnectCmd);
 			strcat(pb->payload, (char*)ps->ptcp->mac);  //mac 没有结束\0,,验证
 			tcp_client_close(ps);
-			udp_client_Send(ps->pserver->upcb_server.upcb, ps->pserver->upcb_server.addr, ps->pserver->upcb_server.port, pb->payload, pb->len);
+			udp_client_Send(&ps->pserver->sudp, ps->pserver->sudp.uip, pb->payload, pb->len);
 		}
 		
 	}
@@ -134,7 +138,7 @@ void tcp_client_close( tcp_infor_t* ts)
 	strcat(pb->payload,DisconnectCmd);
 	strcat(pb->payload, (char*)ts->ptcp->mac);  //mac 没有结束\0,,验证
 	tcp_client_close(ts);
-	udp_client_Send(ts->pserver->upcb_server.upcb, ts->pserver->upcb_server.addr, ts->pserver->upcb_server.port, pb->payload, pb->len);
+	udp_client_Send(&ts->pserver->sudp, ts->pserver->sudp.uip, pb->payload, pb->len);
 }
 
 static err_t Tcp_RecFun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err)
@@ -151,7 +155,7 @@ static err_t Tcp_RecFun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
 	{
 		ts->ptcp->tstate = S_RECEIVE;
 		ts->ptcp->recv(tpcb, p, arg, err);
-		udp_client_Send(ts->pserver->upcb_server.upcb, ts->pserver->upcb_server.addr, ts->pserver->upcb_server.port, p->payload, p->len);
+//		udp_client_Send(ts->pserver->upcb_server.upcb, ts->pserver->upcb_server.addr, ts->pserver->upcb_server.port, p->payload, p->len);
 		pbuf_free(p);
 	}
 	ts->ptcp->tstate = S_CLOSED;

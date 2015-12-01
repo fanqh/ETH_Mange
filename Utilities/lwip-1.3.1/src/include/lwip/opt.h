@@ -206,7 +206,7 @@
  * this should be set high.
  */
 #ifndef MEMP_NUM_PBUF
-#define MEMP_NUM_PBUF                   32//16
+#define MEMP_NUM_PBUF                   16//16
 #endif
 
 /**
@@ -214,7 +214,7 @@
  * (requires the LWIP_RAW option)
  */
 #ifndef MEMP_NUM_RAW_PCB
-#define MEMP_NUM_RAW_PCB                32//4
+#define MEMP_NUM_RAW_PCB                16//4
 #endif
 
 /**
@@ -223,7 +223,7 @@
  * (requires the LWIP_UDP option)
  */
 #ifndef MEMP_NUM_UDP_PCB
-#define MEMP_NUM_UDP_PCB                32//4
+#define MEMP_NUM_UDP_PCB                16//4
 #endif
 
 /**
@@ -231,7 +231,7 @@
  * (requires the LWIP_TCP option)
  */
 #ifndef MEMP_NUM_TCP_PCB
-#define MEMP_NUM_TCP_PCB                32//5
+#define MEMP_NUM_TCP_PCB                16//5
 #endif
 
 /**

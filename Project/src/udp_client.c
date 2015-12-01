@@ -29,7 +29,7 @@ err_t udp_client_init(udp_struct_t *ut, void *arg)
 }
 
 //err_t udp_client_Send(struct udp_pcb  *upcb, struct ip_addr ip_addr, uint16_t port, uint8_t *p, uint16_t len)
-err_t udp_client_Send(udp_struct_t *ut, struct ip_addr *addr, uint8_t *p, uint16_t len)
+err_t udp_client_Send(udp_struct_t *ut, struct ip_addr addr, uint8_t *p, uint16_t len)
 {
 		struct pbuf *pSend;
 		err_t ret = ERR_OK;
@@ -40,10 +40,10 @@ err_t udp_client_Send(udp_struct_t *ut, struct ip_addr *addr, uint8_t *p, uint16
 		pSend = pbuf_alloc(PBUF_TRANSPORT, len, PBUF_RAM);
 		if(pSend==NULL)
 			return ERR_BUF;
-		pSend->payload = p;
+		memcpy(pSend->payload , p, len);
 		pSend->tot_len = pSend->len = len;
 		
-		ret = udp_connect(ut->upcb, addr, ut->uremote_port);
+		ret = udp_connect(ut->upcb, &addr, ut->uremote_port);
 		if(ret!=ERR_OK)
 		{
 			udp_remove(ut->upcb);

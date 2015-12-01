@@ -226,9 +226,9 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 		  flag_server = 1;
 		  udp_server_init(&Device_Infor);
 		}
-		broadlink_init(&Device_Infor);
+//		broadlink_init(&Device_Infor);
 		Switch_Init(&Device_Infor);
-		revogi_Init(&Device_Infor);  
+//		revogi_Init(&Device_Infor);  
     }
 
 #if LWIP_DHCP

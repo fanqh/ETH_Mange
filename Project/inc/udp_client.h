@@ -9,7 +9,7 @@
 
 
 err_t udp_client_init(udp_struct_t *ut, void *arg);
-err_t udp_client_Send(udp_struct_t *ut, struct ip_addr *addr, uint8_t *p, uint16_t len);
+err_t udp_client_Send(udp_struct_t *ut, struct ip_addr addr, uint8_t *p, uint16_t len);
 
 
 

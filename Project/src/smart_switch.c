@@ -25,7 +25,7 @@ smart_switch_infor_t switch_infor=
 	0,
 	{S_IDLE, 0,0,SWTICH_ADV_PORT,SWITCH_UPD_LOCAL_PORT,0},//udp
 	{0,S_IDLE,0,0,SWITCH_TCP_LOCAL_PORT,SWITCH_TCP_PORT,Switch_Tcp_Rec,{0}},//tcp
-	{0},
+	{0}, //adv_ip
 	{0},
 	FALSE,
 	FALSE,
@@ -53,6 +53,7 @@ err_t Switch_Init(device_infor_t *pDev)
 	pDev->udp_num++;
 	switch_infor.pdev = pDev;
 	switch_infor.udp.recv = switch_rec_callback;
+	switch_infor.tcp.arg = pDev->server;
 //	switch_infor.udp.uremote_port = SWTICH_ADV_PORT;
 //	switch_infor.udp.ulocal_port = SWITCH_UPD_LOCAL_PORT;
 //	switch_infor.tcp_ip.addr = 0;
@@ -83,6 +84,7 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		if(ip_addr.addr!=addr->addr)
 			return;
 		switch_infor.tcp.tip.addr = ip_addr.addr;
+		switch_infor.udp.uip.addr = ip_addr.addr;
 		
 		ptr = strstr((char*)rec, ",");
 		if(ptr==NULL)
@@ -100,7 +102,7 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	}
 	
 	
-	udp_client_Send(&pserver->sudp, &pserver->sudp.uip, p->payload, p->len);
+	udp_client_Send(&pserver->sudp, pserver->sudp.uip, p->payload, p->len);
 	printf("[sw]: ");
 	for(i=0;i<p->len;i++)
 	{
@@ -112,7 +114,7 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 }
 
 //switch udp 发送
-err_t switch_udp_Send(struct ip_addr *addr, uint8_t *p, uint16_t len)
+err_t switch_udp_Send(struct ip_addr addr, uint8_t *p, uint16_t len)
 {
 		err_t ret = ERR_OK;
 	
@@ -124,11 +126,11 @@ err_t switch_udp_Send(struct ip_addr *addr, uint8_t *p, uint16_t len)
 
 //初始化TCP客户端
 err_t Switch_TCP_Client_Attemp_Connect(smart_switch_infor_t  *ps)
-{
-	tcp_infor_t *ts;
-	
-	ts->ptcp = &(ps->tcp);
-	return TCP_Client_Attemp_Connect(ts);
+{	
+	tcp_struct_t *ts;
+//	ts->pserver = ps->pdev->server;
+//	ts->ptcp = &(ps->tcp);
+	return  TCP_Client_Attemp_Connect1();
 }
 
 //关闭TCP链接

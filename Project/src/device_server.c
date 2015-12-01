@@ -48,8 +48,8 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 Dev_Server_infor_t dev_Server_inf=
 {
 0,
-{S_IDLE,0,0,MANAGE_UDP_SERVER_PORT,MANAGE_UDP_SERVER_PORT,0},
-{0},
+{S_IDLE,0,0,MANAGE_UDP_SERVER_PORT,MANAGE_UDP_SERVER_PORT,0}, //udp
+{0}, //tcp
 0
 };
 
@@ -77,10 +77,11 @@ err_t udp_server_init(void *pd)
 		udp_remove(dev_Server_inf.sudp.upcb);
 		return ret;
 	}
+	dev_Server_inf.sudp.ustate = S_CONNECTING;
 	dev_Server_inf.arg = pd;
 	dev_Server_inf.sudp.recv = udp_server_callback;
 //	pd->udp_num++;
-	udp_recv(dev_Server_inf.sudp.upcb, udp_server_callback, &dev_Server_inf);  
+	udp_recv(dev_Server_inf.sudp.upcb, dev_Server_inf.sudp.recv, &dev_Server_inf);  
 	return ret;
 }
 
@@ -114,6 +115,7 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		ps->sudp.uip.addr = addr->addr;
 	if(ps->sudp.uremote_port!=port)
 		ps->sudp.uremote_port = port;
+#if 1	
 	ptr = (uint8_t*)strstr((char*)buff, FindCMD);
 	if(ptr)
 	{
@@ -145,30 +147,30 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		}
 			
 	}
-#if 0
-	else if(strstr((char*)buff, "find"))
+//	else if(strstr((char*)buff, "find"))
+//	{
+//		uint8_t pw[2] = {0,0};
+//		Broadlink_Find(pw);
+//		printf("[server]: find\r\n");
+//	}
+//	else if(strstr((char*)buff,"keepalive"))
+//	{
+//		Broadlink_KeepAlive();
+//		printf("[server]: keepalive\r\n");
+//	}
+//	else if(strstr((char*)buff, "query"))
+//	{ 
+//		uint8_t CheckState = 0xf0;
+//		uint8_t Port = 0;
+//		uint8_t id[4] = {0,0,0,0};
+//		
+//		Broadlink_Query(CheckState, Port, id );
+//		printf("[server]: query\r\n");
+//	}
+//	else 
+	if(strstr((char*)buff,"send"))
 	{
-		uint8_t pw[2] = {0,0};
-		Broadlink_Find(pw);
-		printf("[server]: find\r\n");
-	}
-	else if(strstr((char*)buff,"keepalive"))
-	{
-		Broadlink_KeepAlive();
-		printf("[server]: keepalive\r\n");
-	}
-	else if(strstr((char*)buff, "query"))
-	{ 
-		uint8_t CheckState = 0xf0;
-		uint8_t Port = 0;
-		uint8_t id[4] = {0,0,0,0};
-		
-		Broadlink_Query(CheckState, Port, id );
-		printf("[server]: query\r\n");
-	}
-	else if(strstr((char*)buff,"send"))
-	{
-		switch_udp_Send(SwitchAdvCMD, sizeof(SwitchAdvCMD)-1);
+		switch_udp_Send(switch_infor.adv_ip, SwitchAdvCMD, sizeof(SwitchAdvCMD)-1);
 		printf("[server]: sending\r\n");
 	}	
 	else if(strstr((char*)buff,"connect"))
@@ -176,6 +178,7 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		//pSwitch_infor.tcp_ip.addr  = 0x6600A8C0; 
 	//		pSwitch_infor.tcp_ip.addr  = 0xf801010A;
 		Switch_TCP_Client_Attemp_Connect(&switch_infor);
+		printf("remote: %d\r\n", switch_infor.tcp.tremote_port);
 		
 	}
 	else if(strstr((char*)buff,"tcp"))
@@ -185,20 +188,21 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		if(ret!=ERR_OK)
 			printf("send err\r\n");
 	}
-	else if(strstr((char*)buff, "trip"))
-	{
-		revogi_find_udp_Send(TripFindCMD, sizeof(TripFindCMD)-1);
-	}
-	else if(strstr((char*)buff, "hello"))
-	{
-		PowerTrip_TCP_Client_Attemp_Connect(&revogi_infor);
-	}
-	else if(strstr((char*)buff, "hi"))
-	{
-		PowerTrip_TCP_Send(&revogi_infor, TripTurnoffCMD, sizeof(TripTurnoffCMD)-1);
-	}
-	udp_client_Send(&ps->sudp, addr, p->payload, p->len);
+//	else if(strstr((char*)buff, "trip"))
+//	{
+//		revogi_find_udp_Send(TripFindCMD, sizeof(TripFindCMD)-1);
+//	}
+//	else if(strstr((char*)buff, "hello"))
+//	{
+//		PowerTrip_TCP_Client_Attemp_Connect(&revogi_infor);
+//	}
+//	else if(strstr((char*)buff, "hi"))
+//	{
+//		PowerTrip_TCP_Send(&revogi_infor, TripTurnoffCMD, sizeof(TripTurnoffCMD)-1);
+//	}
+	
 #endif
+	udp_client_Send(&ps->sudp, *addr, buff, p->len);
 	pbuf_free(p);
    
 }
