@@ -86,7 +86,7 @@ static void tcp_err_callback(void *arg, err_t err)
 	{
 		printf("[tcp_client]: ERR %d\r\n", err);
 		ps->retry ++;
-		if(ps->retry<1)
+		if(ps->retry<5)
 			TCP_Client_Attemp_Connect(ps); //直接去链接，还是需要等待一段时间链接，需要测试
 			//set_timer4_countTime(TIMER_5000MS);
 		else
@@ -104,13 +104,12 @@ void tcp_client_close( tcp_struct_t* ts)
 {
 	if(ts!=NULL)
 	{
-		ts->tstate = S_CLOSED;
+		ts->tstate = S_IDLE;
 		tcp_arg(ts->tpcb, NULL);  			
 		tcp_recv(ts->tpcb, NULL);
 		tcp_poll(ts->tpcb, NULL, 0); 
 		tcp_close(ts->tpcb);
 	}
-	tcp_client_close(ts);
 	if(ts->connectclose!=NULL)
 		ts->connectclose(ts);
 }
