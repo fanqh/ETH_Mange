@@ -200,7 +200,6 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	else if((ptr = strstr((char*)buff, "tripctrol:"))!=NULL)
 	{
 		char *str;
-		uint8_t len;
 		
 		printf("%c,%c\r\n", *(ptr+10),*(ptr+12));
 		TripTurnoffCMD[51] = *(ptr+10);
@@ -208,7 +207,6 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		ptr = strstr(TripTurnoffCMD,"Host:");
 		str = inet_ntoa(*(struct in_addr*)&revogi_infor.net.tcp.tip);
 		memcpy(ptr+6,str,16);
-		len = sizeof(TripTurnoffCMD);
 		PowerTrip_TCP_Send(&revogi_infor, TripTurnoffCMD, sizeof(TripTurnoffCMD));
 //		udp_client_Send(&ps->sudp, *addr, TripTurnoffCMD, sizeof(TripTurnoffCMD));
 	}

@@ -58,10 +58,8 @@ typedef struct
 typedef struct{
 	uint8_t count;
 	netlink_struct_t net;
-	Broadlink_comm_t  comm;;
+	Broadlink_comm_t  comm;
 	struct ip_addr    adv_ip;
-	device_infor_t  *pdev;
-	
 	device_infor_t  *pdev;
 	
 }broadlink_infor_t;

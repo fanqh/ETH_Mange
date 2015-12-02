@@ -39,6 +39,8 @@ broadlink_infor_t broadlink_infor =
 {
 	0,
 	{{S_IDLE,0,0,BROADLINK_UDP_REMOTE_PORT,BROADLINK_UDP_LOCAL_PORT,broadlink_rec_callback},{0}},
+	{0},
+	{0},
 	0
 };
 
@@ -46,29 +48,23 @@ err_t broadlink_init(device_infor_t *pDec)
 {
 	err_t ret = ERR_OK;
 	
-	broadlink_infor.upcb = udp_new();
-	if(broadlink_infor.upcb==NULL)
+	broadlink_infor.net.udp.upcb = udp_new();
+	if(broadlink_infor.net.udp.upcb==NULL)
 		return ERR_BUF;
 	
 	broadlink_infor.pdev = pDec;
 	pDec->udp_num++;
-	broadlink_infor.state = BL_UNINIT;
-	broadlink_infor.local_port = UDP_CLIENT_PORT;
-	broadlink_infor.remote_port = BROADLINK_PORT;
-	SET_IP4_ADDR(&broadlink_infor.ip_addr, BROADLINK_IP_ADDR);
+	SET_IP4_ADDR(&broadlink_infor.net.udp.uip, BROADLINK_IP_ADDR);
 	
-	ret = udp_client_init(broadlink_infor.upcb, broadlink_rec_callback, broadlink_infor.ip_addr, broadlink_infor.remote_port, broadlink_infor.local_port, &broadlink_infor);
-	if(ret==ERR_OK)
-		broadlink_infor.state = BL_INITIALIZED;
-		
+	ret = udp_client_init(&broadlink_infor.net.udp, &broadlink_infor);		
 	return ret;
 }
 
-err_t Broadlink_Send(uint8_t *p, uint16_t len)
+err_t Broadlink_Send(struct ip_addr addr, uint8_t *p, uint16_t len)
 {
 		err_t ret = ERR_OK;
 	
-		ret = udp_client_Send(broadlink_infor.upcb, broadlink_infor.ip_addr, broadlink_infor.remote_port, p, len);
+		ret = udp_client_Send(&broadlink_infor.net.udp, addr, p, len);
 		return ret;
 }
 
@@ -77,12 +73,12 @@ err_t Broadlink_Find(uint8_t *passwd)
 		
 															
 		BroadlinktFind[5] =  FIND_CMD + *passwd + *(passwd+1);		
-		return Broadlink_Send(BroadlinktFind, sizeof(BroadlinktFind));
+		return Broadlink_Send(broadlink_infor.adv_ip, BroadlinktFind, sizeof(BroadlinktFind));
 }
 
 err_t Broadlink_KeepAlive(void)
 {
-		return Broadlink_Send(BroadlinkKeepAlive, sizeof(BroadlinkKeepAlive));
+		return Broadlink_Send(broadlink_infor.net.udp.uip, BroadlinkKeepAlive, sizeof(BroadlinkKeepAlive));
 }
 
 err_t Broadlink_Query(uint8_t check_state, uint16_t port, uint8_t *id )
@@ -101,7 +97,7 @@ err_t Broadlink_Query(uint8_t check_state, uint16_t port, uint8_t *id )
 		crc += BroadlinkQuery[i];
 	
 	BroadlinkQuery[len-3] = crc;
-	return Broadlink_Send(BroadlinkQuery, len);
+	return Broadlink_Send(broadlink_infor.net.udp.uip, BroadlinkQuery, len);
 }
 
 
@@ -119,17 +115,17 @@ static void broadlink_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf 
 //  struct tcp_pcb *pcb;
 	uint8_t rec[256];
 	uint8_t i;
-	broadlink_infor_t *pbroadlink;
-	Dev_Server_infor_t *pserver;
+	broadlink_infor_t *pb;
+	Dev_Server_infor_t *ps;
 
-
-	broadlink_infor.ip_addr.addr = addr->addr;
-	pbroadlink = (broadlink_infor_t*)arg;
-	pserver = (Dev_Server_infor_t*)pbroadlink->pdev->p;
+	pb = (broadlink_infor_t*)arg;
+	ps = pb->pdev->server;
+	if(broadlink_infor.net.udp.uip.addr != addr->addr)
+		broadlink_infor.net.udp.uip.addr = addr->addr;
 	printf("[BDLINK]: broadcast ip: %X\r\n", (uint32_t)addr->addr);
 	memcpy(rec, p->payload,p->len);
 	printf("[BDLINK]: ");
-	udp_client_Send(pserver->upcb_server.upcb, pserver->upcb_server.addr, pserver->upcb_server.port, p->payload, p->len);
+	udp_client_Send(&ps->sudp, ps->sudp.uip, p->payload, p->len);
 	for(i=0;i<p->len;i++)
 	{
 		printf(" %X",rec[i] );
