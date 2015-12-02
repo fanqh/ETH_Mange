@@ -35,11 +35,12 @@ const char FindCMDResp[] = {'c','m','d',':',0,0,0,0,0,0,'I','P',':',0,0,0,0};
 
 //		smart_switch_infor_t  pSwitch_infor;
 uint8_t SwitchAdvCMD[] = "YZ-RECOSCAN";
-uint8_t Switch_RealTimeCMD[] = "AT+YZSWITCH=1,ON,201511222133\r\n";
+uint8_t SmartPlugTurnOnCMD[] = "AT+YZSWITCH=1,ON,201511222133\r\n";
+uint8_t SmartPlugTurnOffCMD[] = "AT+YZSWITCH=1,OFF,201511222133\r\n";
 
 //smart Power trip
 uint8_t TripFindCMD[] = "00sw=all,2015-11-27,21:16:39,+8";
-uint8_t TripTurnoffCMD[] = "GET /?cmd=200&json={\"sn\":\"SWW6012003000015\",\"port\":0,\"state\":1} HTTP/1.1\r\nHost: 192.168.0.103";
+uint8_t TripTurnoffCMD[] = "GET /?cmd=200&json={\"sn\":\"SWW6012003000015\",\"port\":0,\"state\":0} HTTP/1.1\r\nHost: 192.168.0.103";
 
 
 /* Private function prototypes -----------------------------------------------*/
@@ -168,36 +169,38 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 //		printf("[server]: query\r\n");
 //	}
 //	else 
-	if(strstr((char*)buff,"send"))
-	{
+	if(strstr((char*)buff,"plugfind"))
 		switch_udp_Send(switch_infor.adv_ip, SwitchAdvCMD, sizeof(SwitchAdvCMD)-1);
-		printf("[server]: sending\r\n");
-	}	
-	else if(strstr((char*)buff,"connect"))
-	{
+	else if(strstr((char*)buff,"plugconnect"))
 		Switch_TCP_Client_Attemp_Connect(&switch_infor);
-//		printf("remote: %d\r\n", switch_infor.tcp.tremote_port);
-		
-	}
-	else if(strstr((char*)buff,"tcp"))
+	else if(strstr((char*)buff,"plugctrol:on"))
 	{
 		err_t ret;
-		ret = Switch_TCP_Send(&switch_infor, Switch_RealTimeCMD, sizeof(Switch_RealTimeCMD)-1);
+
+		ret = Switch_TCP_Send(&switch_infor, SmartPlugTurnOnCMD, sizeof(SmartPlugTurnOnCMD)-1);
 		if(ret!=ERR_OK)
 			printf("send err\r\n");
 	}
-//	else if(strstr((char*)buff, "trip"))
-//	{
-//		revogi_find_udp_Send(TripFindCMD, sizeof(TripFindCMD)-1);
-//	}
-//	else if(strstr((char*)buff, "hello"))
-//	{
-//		PowerTrip_TCP_Client_Attemp_Connect(&revogi_infor);
-//	}
-//	else if(strstr((char*)buff, "hi"))
-//	{
-//		PowerTrip_TCP_Send(&revogi_infor, TripTurnoffCMD, sizeof(TripTurnoffCMD)-1);
-//	}
+	else if(strstr((char*)buff,"plugctrol:off"))
+	{
+		err_t ret;
+
+		ret = Switch_TCP_Send(&switch_infor, SmartPlugTurnOffCMD, sizeof(SmartPlugTurnOffCMD)-1);
+		if(ret!=ERR_OK)
+			printf("send err\r\n");
+	}
+	else if(strstr((char*)buff, "tripfind"))
+	{
+		revogi_udp_Send(revogi_infor.adv_ip, TripFindCMD, sizeof(TripFindCMD)-1);
+	}
+	else if(strstr((char*)buff, "tripconnect"))
+	{
+		PowerTrip_TCP_Client_Attemp_Connect(&revogi_infor);
+	}
+	else if(strstr((char*)buff, "tripctrol"))
+	{
+		PowerTrip_TCP_Send(&revogi_infor, TripTurnoffCMD, sizeof(TripTurnoffCMD)-1);
+	}
 	
 #endif
 	udp_client_Send(&ps->sudp, *addr, buff, p->len);

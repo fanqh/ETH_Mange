@@ -57,4 +57,31 @@ err_t udp_client_Send(udp_struct_t *ut, struct ip_addr addr, uint8_t *p, uint16_
 		pbuf_free(pSend);
 		return ret;
 }
+uint8_t CompareMac(uint8_t *pmac1, uint8_t *pmac2)
+{
+	uint8_t i;
+	
+	for(i=0; i<6; i++)
+	{
+		if(*pmac1++ != *pmac2++)
+			return 0;
+	}
+	return 1;
+}
+
+int NumofStr(char*str, char c)
+{
+	char *p;
+	int num = 0;
+	
+	p = str;
+	while(*p!='\0')
+	{
+		if(*p==c)
+			num++;
+		++p;
+	}
+	return num;
+}
+
 

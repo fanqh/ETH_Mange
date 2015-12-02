@@ -17,8 +17,6 @@
 #define SWITCH_TCP_PORT          8899
 #define SWITCH_TCP_LOCAL_PORT    9008
 
-#define PACKAGE_MAX              256
-
 
 static void  connectedf(void *arg);
 static void connecterrf(void *arg);
@@ -27,9 +25,9 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 err_t Switch_Tcp_Rec(struct pbuf *tpcb,void *arg, err_t err);
 
 
-const char connectedcmd[] = "connnect:";
-const char connecterrcmd[] = "connecterr:";
-const char closecmd[] = "close:";
+//const char connectedcmd[] = "connnect:";
+//const char connecterrcmd[] = "connecterr:";
+//const char closecmd[] = "close:";
 
 smart_switch_infor_t switch_infor=
 {
@@ -64,8 +62,6 @@ err_t Switch_Init(device_infor_t *pDev)
 		return ERR_BUF;
 	pDev->udp_num++;
 	switch_infor.pdev = pDev;
-	switch_infor.pdev = pDev;
-	
 	ret = udp_client_init(&switch_infor.netlink.udp, &switch_infor);
 	return ret;
 }
@@ -102,12 +98,12 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		ptr = strstr((char*)(ptr+1),",");
 		if(ptr==NULL)
 			return;
-		memcpy(switch_infor.smartplug_comm.sn,ptr+1,9);
+		memcpy(pSw->smartplug_comm.sn,ptr+1,9);
 		ptr = strstr((char*)(ptr+10),",");
 		if(ptr==NULL)
 			return;
-		switch_infor.smartplug_comm.is_online =(bool) *(ptr+1);
-		switch_infor.smartplug_comm.state =(bool) *(ptr+3);
+		pSw->smartplug_comm.is_online =(bool) *(ptr+1);
+		pSw->smartplug_comm.state =(bool) *(ptr+3);
 	}
 	
 	
@@ -125,10 +121,10 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 
 static void  connectedf(void *arg)
 {
-	tcp_struct_t  *ts;
+//	tcp_struct_t  *ts;
 	struct pbuf *p;
 	
-	ts = (tcp_struct_t*)arg;
+//	ts = (tcp_struct_t*)arg;
 	p = pbuf_alloc(PBUF_TRANSPORT, PACKAGE_MAX, PBUF_RAM);
 	
 	memcpy(p->payload,connectedcmd,sizeof(connectedcmd));
@@ -138,10 +134,10 @@ static void  connectedf(void *arg)
 }	
 static void connecterrf(void *arg)
 {
-	tcp_struct_t  *ts;
+//	tcp_struct_t  *ts;
 	struct pbuf *p;
 	
-	ts = (tcp_struct_t*)arg;
+//	ts = (tcp_struct_t*)arg;
 	p = pbuf_alloc(PBUF_TRANSPORT, PACKAGE_MAX, PBUF_RAM);
 	
 	memcpy(p->payload,connecterrcmd,sizeof(connecterrcmd));
@@ -151,10 +147,10 @@ static void connecterrf(void *arg)
 }
 static void connectclose(void *arg)
 {
-	tcp_struct_t  *ts;
+//	tcp_struct_t  *ts;
 	struct pbuf *p;
 	
-	ts = (tcp_struct_t*)arg;
+//	ts = (tcp_struct_t*)arg;
 	p = pbuf_alloc(PBUF_TRANSPORT, PACKAGE_MAX, PBUF_RAM);
 	
 	memcpy(p->payload,closecmd,sizeof(closecmd));
@@ -217,29 +213,4 @@ err_t Switch_Tcp_Rec(struct pbuf *p, void *arg, err_t err)
 }
 
 
-uint8_t CompareMac(uint8_t *pmac1, uint8_t *pmac2)
-{
-	uint8_t i;
-	
-	for(i=0; i<6; i++)
-	{
-		if(*pmac1++ != *pmac2++)
-			return 0;
-	}
-	return 1;
-}
 
-int NumofStr(char*str, char c)
-{
-	char *p;
-	int num = 0;
-	
-	p = str;
-	while(*p!='\0')
-	{
-		if(*p==c)
-			num++;
-		++p;
-	}
-	return num;
-}

@@ -7,10 +7,6 @@
 #include <stdio.h>
 #include "netconf.h"
 #include "udp_client.h"
-//#include ""
-
-#define PACKAGE_MAX              256
-
 
 static err_t Tcp_RecFun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
 static err_t TCP_Client_Connected(void *arg, struct tcp_pcb *tpcb, err_t err);
@@ -26,6 +22,8 @@ err_t TCP_Client_Attemp_Connect(tcp_struct_t *ts)
 {
 	err_t ret = ERR_OK;
 	
+	if(ts->tstate==S_CONNECTED)
+		ts->connectedf(ts);
     if(ts->tstate==S_IDLE)
 	{
 	    ts->tpcb = tcp_new();				//新建一个PCB	
