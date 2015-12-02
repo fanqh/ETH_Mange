@@ -66,8 +66,6 @@ static int extractMac(char *des,char *src)
 	for(i=0;i<6;i++)
 	{
 		memcpy(p+i*2, d+3*i,2);
-//		p = p + 2*i;
-		printf("\r\n %c\r\n", *(d+3*i));
 	}
 	return 1;
 }

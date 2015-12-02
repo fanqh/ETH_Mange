@@ -9,9 +9,9 @@
 
 #define PACKAGE_MAX              256
 
-#define  connectedcmd    "connnect:"
-#define  connecterrcmd   "connecterr:"
-#define  closecmd 		 "close:"
+#define  connectedcmd    "TCP CONNECTED:"
+#define  connecterrcmd   "TCP CONNECTERR:"
+#define  closecmd 		 "TCP CLOSE:"
 
 err_t udp_client_init(udp_struct_t *ut, void *arg);
 err_t udp_client_Send(udp_struct_t *ut, struct ip_addr addr, uint8_t *p, uint16_t len);

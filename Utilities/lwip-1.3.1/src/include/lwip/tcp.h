@@ -189,11 +189,11 @@ u32_t            tcp_update_rcv_ann_wnd(struct tcp_pcb *pcb);
 
 /* Keepalive values, compliant with RFC 1122. Don't change this unless you know what you're doing */
 #ifndef  TCP_KEEPIDLE_DEFAULT
-#define  TCP_KEEPIDLE_DEFAULT     5000//7200000UL /* Default KEEPALIVE timer in milliseconds */
+#define  TCP_KEEPIDLE_DEFAULT     500//7200000UL /* Default KEEPALIVE timer in milliseconds */
 #endif                               
 
 #ifndef  TCP_KEEPINTVL_DEFAULT
-#define  TCP_KEEPINTVL_DEFAULT   2000// 75000UL   /* Default Time between KEEPALIVE probes in milliseconds */
+#define  TCP_KEEPINTVL_DEFAULT   1000// 75000UL   /* Default Time between KEEPALIVE probes in milliseconds */
 #endif
 
 #ifndef  TCP_KEEPCNT_DEFAULT

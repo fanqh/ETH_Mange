@@ -12,10 +12,7 @@ static err_t Tcp_RecFun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
 static err_t TCP_Client_Connected(void *arg, struct tcp_pcb *tpcb, err_t err);
 static void tcp_err_callback(void *arg, err_t err);
 
-err_t TCP_Client_Attemp_Connect1(void)
-{
-	return ERR_OK;
-}
+
 
 //初始化TCP客户端
 err_t TCP_Client_Attemp_Connect(tcp_struct_t *ts)
@@ -84,7 +81,7 @@ static void tcp_err_callback(void *arg, err_t err)
 	{
 		printf("[tcp_client]: ERR %d\r\n", err);
 		ps->retry ++;
-		if(ps->retry<5)
+		if(ps->retry<2)
 			TCP_Client_Attemp_Connect(ps); //直接去链接，还是需要等待一段时间链接，需要测试
 			//set_timer4_countTime(TIMER_5000MS);
 		else

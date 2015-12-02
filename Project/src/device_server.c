@@ -40,7 +40,7 @@ uint8_t SmartPlugTurnOffCMD[] = "AT+YZSWITCH=1,OFF,201511222133\r\n";
 
 //smart Power trip
 uint8_t TripFindCMD[] = "00sw=all,2015-11-27,21:16:39,+8";
-uint8_t TripTurnoffCMD[] = "GET /?cmd=200&json={\"sn\":\"SWW6012003000015\",\"port\":0,\"state\":0} HTTP/1.1\r\nHost: 192.168.0.103";
+uint8_t TripTurnoffCMD[] = "GET /?cmd=200&json={\"sn\":\"SWW6012003000015\",\"port\":0,\"state\":0} HTTP/1.1\r\nHost: 100.100.10.119";
 
 
 /* Private function prototypes -----------------------------------------------*/
@@ -98,7 +98,7 @@ err_t udp_server_init(void *pd)
 static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
 {
 	uint8_t buff[256];
-	uint8_t *ptr,*pGW;
+	char *ptr,*pGW;
 	struct ip_addr remote_gw;
 	Dev_Server_infor_t *ps;
 
@@ -117,7 +117,7 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	if(ps->sudp.uremote_port!=port)
 		ps->sudp.uremote_port = port;
 #if 1	
-	ptr = (uint8_t*)strstr((char*)buff, FindCMD);
+	ptr = strstr((char*)buff, FindCMD);
 	if(ptr)
 	{
 		DEBUG("[server]: RemoteGw: %s\r\n",ptr+sizeof(FindCMD)-1); 
@@ -197,9 +197,20 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	{
 		PowerTrip_TCP_Client_Attemp_Connect(&revogi_infor);
 	}
-	else if(strstr((char*)buff, "tripctrol"))
+	else if((ptr = strstr((char*)buff, "tripctrol:"))!=NULL)
 	{
-		PowerTrip_TCP_Send(&revogi_infor, TripTurnoffCMD, sizeof(TripTurnoffCMD)-1);
+		char *str;
+		uint8_t len;
+		
+		printf("%c,%c\r\n", *(ptr+10),*(ptr+12));
+		TripTurnoffCMD[51] = *(ptr+10);
+		TripTurnoffCMD[61] = *(ptr+12);//((*(ptr+12)=='1')?1:0);   //*(ptr+13);
+		ptr = strstr(TripTurnoffCMD,"Host:");
+		str = inet_ntoa(*(struct in_addr*)&revogi_infor.net.tcp.tip);
+		memcpy(ptr+6,str,16);
+		len = sizeof(TripTurnoffCMD);
+		PowerTrip_TCP_Send(&revogi_infor, TripTurnoffCMD, sizeof(TripTurnoffCMD));
+//		udp_client_Send(&ps->sudp, *addr, TripTurnoffCMD, sizeof(TripTurnoffCMD));
 	}
 	
 #endif
