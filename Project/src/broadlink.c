@@ -11,16 +11,13 @@
 #include "device_server.h"
 
 /* Private typedef -----------------------------------------------------------*/
-#define BROADLINK_PORT      		9001
-#define UDP_CLIENT_PORT      		9002
+#define BROADLINK_UDP_REMOTE_PORT      		9001
+#define BROADLINK_UDP_LOCAL_PORT      		9002
 #define BROADLINK_IP_ADDR				255,255,255,255
 //#define BROADLINK_IP_ADDR				192,168,0,100
 
 
-/* Private functions ---------------------------------------------------------*/
-broadlink_infor_t broadlink_infor = 
-{
-};
+
 uint8_t SendBuff[UDP_PACKAGE_MAX];
 
 
@@ -37,7 +34,13 @@ uint8_t BroadlinkCancelStudy[] = {0xFF,0xEE,0xc1,0,0,0,0,5,0,0,0,0,0,0,0xef,0xfe
 static void broadlink_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
 extern void SET_IP4_ADDR(struct ip_addr *ipaddr,unsigned char a,unsigned char b,unsigned char c,unsigned char d);
 
-
+/* Private functions ---------------------------------------------------------*/
+broadlink_infor_t broadlink_infor = 
+{
+	0,
+	{{S_IDLE,0,0,BROADLINK_UDP_REMOTE_PORT,BROADLINK_UDP_LOCAL_PORT,broadlink_rec_callback},{0}},
+	0
+};
 
 err_t broadlink_init(device_infor_t *pDec)
 {

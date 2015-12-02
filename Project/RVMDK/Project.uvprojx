@@ -511,6 +511,11 @@
               <FileType>1</FileType>
               <FilePath>..\src\revogi.c</FilePath>
             </File>
+            <File>
+              <FileName>broadlink.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\broadlink.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
