@@ -118,19 +118,29 @@ static void broadlink_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf 
 	broadlink_infor_t *pb;
 	Dev_Server_infor_t *ps;
 
-	pb = (broadlink_infor_t*)arg;
-	ps = pb->pdev->server;
-	if(broadlink_infor.net.udp.uip.addr != addr->addr)
-		broadlink_infor.net.udp.uip.addr = addr->addr;
-	printf("[BDLINK]: broadcast ip: %X\r\n", (uint32_t)addr->addr);
-	memcpy(rec, p->payload,p->len);
-	printf("[BDLINK]: ");
-	udp_client_Send(&ps->sudp, ps->sudp.uip, p->payload, p->len);
-	for(i=0;i<p->len;i++)
+	
+
+	
+	memcpy(rec,p->payload,p->len);
+	if((rec[0]==0xFF)&&(rec[1]==0xEE))
 	{
-		printf(" %X",rec[i] );
+		if(rec[3]==FIND_CMD)
+		{
+			if(broadlink_infor.net.udp.uip.addr != addr->addr)
+				broadlink_infor.net.udp.uip.addr = addr->addr;
+		}
+		pb = (broadlink_infor_t*)arg;
+		ps = pb->pdev->server;
+		printf("[BDLINK]: broadcast ip: %X\r\n", (uint32_t)addr->addr);
+		memcpy(rec, p->payload,p->len);
+		printf("[BDLINK]: ");
+		udp_client_Send(&ps->sudp, ps->sudp.uip, p->payload, p->len);
+		for(i=0;i<p->len;i++)
+		{
+			printf(" %X",rec[i] );
+		}
+		printf("\r\n");
 	}
-	printf("\r\n");
 
    pbuf_free(p);
 }

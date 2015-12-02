@@ -13,34 +13,6 @@
 #define   	QUERY_CMD      			0XA3
 
 
-/*
-typedef struct
-{
-	uint8_t mac[12];
-	uint8_t sn[9];
-	bool is_online;
-	bool state;
-}smartplug_comm_t;
-
-
-typedef struct
-{	
-	uint8_t connect_count;
-
-	netlink_struct_t  netlink;
-	smartplug_comm_t  smartplug_comm;
-	struct ip_addr    adv_ip;
-	
-	device_infor_t  *pdev;
-}smart_switch_infor_t;
-*/
-
-typedef enum
-{
-		BL_UNINIT,
-		BL_INITIALIZED,
-		BL_CONNECTED,
-}device_state_t;
 
 typedef union
 {
@@ -55,7 +27,8 @@ typedef struct
 }Broadlink_comm_t;
 
 
-typedef struct{
+typedef struct
+{
 	uint8_t count;
 	netlink_struct_t net;
 	Broadlink_comm_t  comm;
