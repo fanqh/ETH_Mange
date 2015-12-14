@@ -81,6 +81,13 @@ err_t Broadlink_KeepAlive(void)
 		return Broadlink_Send(broadlink_infor.net.udp.uip, BroadlinkKeepAlive, sizeof(BroadlinkKeepAlive));
 }
 
+
+/*
+* input:
+check_state: 0xF0/0x00
+port:
+id : 长度为4的数组
+*/
 err_t Broadlink_Query(uint8_t check_state, uint16_t port, uint8_t *id )
 {
 	uint8_t i;
@@ -98,6 +105,10 @@ err_t Broadlink_Query(uint8_t check_state, uint16_t port, uint8_t *id )
 	
 	BroadlinkQuery[len-3] = crc;
 	return Broadlink_Send(broadlink_infor.net.udp.uip, BroadlinkQuery, len);
+}
+err_t Broadlink_transpond(uint8_t *p, uint16_t len )
+{
+	return Broadlink_Send(broadlink_infor.net.udp.uip, p, len);
 }
 
 

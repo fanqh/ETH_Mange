@@ -15,6 +15,8 @@
 
 
 #define MANAGE_UDP_SERVER_PORT  9009	
+#define TCP_SERVER_REMOTE_PORT	4067
+#define TCP_SERVER_LOCAL_PORT	9000
 
 /* Private typedef -----------------------------------------------------------*/
 struct FindCMDResp_t
@@ -46,12 +48,30 @@ uint8_t TripTurnoffCMD[] = "GET /?cmd=200&json={\"sn\":\"SWW6012003000015\",\"po
 /* Private function prototypes -----------------------------------------------*/
 static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
 
+/*
+typedef struct
+{
+	uint16_t retry;
+	s_state_t tstate;
+	struct ip_addr  tip;
+	struct tcp_pcb  *tpcb;
+	uint16_t tlocal_port;
+	uint16_t tremote_port;
+	err_t (* recv)(struct pbuf *p,void *arg, err_t err);
+	void (* connectedf)(void *arg);	
+	void (*connecterrf)(void *arg);
+	void (*connectclose)(void *arg);
+	
+	void *arg;
+}tcp_struct_t;
+*/
+
 Dev_Server_infor_t dev_Server_inf=
 {
-0,
-{S_IDLE,0,0,MANAGE_UDP_SERVER_PORT,MANAGE_UDP_SERVER_PORT,0}, //udp
-{0}, //tcp
-0
+	0,
+	{S_IDLE,0,0,MANAGE_UDP_SERVER_PORT,MANAGE_UDP_SERVER_PORT,0}, //udp
+	{0,S_IDLE,{0},0,TCP_SERVER_LOCAL_PORT,TCP_SERVER_REMOTE_PORT}, //tcp
+	0
 };
 
 
@@ -101,6 +121,7 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	char *ptr,*pGW;
 	struct ip_addr remote_gw;
 	Dev_Server_infor_t *ps;
+	uint8_t flag=1;
 
 	if(p->len>256)
 		return;
@@ -148,28 +169,31 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		}
 			
 	}
-//	else if(strstr((char*)buff, "find"))
-//	{
-//		uint8_t pw[2] = {0,0};
-//		Broadlink_Find(pw);
-//		printf("[server]: find\r\n");
-//	}
-//	else if(strstr((char*)buff,"keepalive"))
-//	{
-//		Broadlink_KeepAlive();
-//		printf("[server]: keepalive\r\n");
-//	}
-//	else if(strstr((char*)buff, "query"))
-//	{ 
-//		uint8_t CheckState = 0xf0;
-//		uint8_t Port = 0;
-//		uint8_t id[4] = {0,0,0,0};
-//		
-//		Broadlink_Query(CheckState, Port, id );
-//		printf("[server]: query\r\n");
-//	}
-//	else 
-	if(strstr((char*)buff,"plugfind"))
+	else if(strstr((char*)buff, "find"))
+	{
+		uint8_t pw[2] = {0,0};
+		Broadlink_Find(pw);
+		printf("[server]: find\r\n");
+	}
+	else if(strstr((char*)buff,"keepalive"))
+	{
+		Broadlink_KeepAlive();
+		printf("[server]: keepalive\r\n");
+	}
+	else if(strstr((char*)buff, "query"))
+	{ 
+		uint8_t CheckState = 0xf0;
+		uint8_t Port = 0;
+		uint8_t id[4] = {0,0,0,0};
+		
+		Broadlink_Query(CheckState, Port, id );
+		printf("[server]: query\r\n");
+	}
+	else if((buff[0]=0xff)&&(buff[1]==0xEE))
+	{
+		Broadlink_transpond(buff, p->len );
+	}
+	else if(strstr((char*)buff,"plugfind"))
 		switch_udp_Send(switch_infor.adv_ip, SwitchAdvCMD, sizeof(SwitchAdvCMD)-1);
 	else if(strstr((char*)buff,"plugconnect"))
 		Switch_TCP_Client_Attemp_Connect(&switch_infor);
@@ -188,6 +212,9 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		ret = Switch_TCP_Send(&switch_infor, SmartPlugTurnOffCMD, sizeof(SmartPlugTurnOffCMD)-1);
 		if(ret!=ERR_OK)
 			printf("send err\r\n");
+	}
+	else if((buff[0]=='a'))
+	{
 	}
 	else if(strstr((char*)buff, "tripfind"))
 	{
@@ -208,13 +235,16 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		str = inet_ntoa(*(struct in_addr*)&revogi_infor.net.tcp.tip);
 		memcpy(ptr+6,str,16);
 		PowerTrip_TCP_Send(&revogi_infor, TripTurnoffCMD, sizeof(TripTurnoffCMD));
-//		udp_client_Send(&ps->sudp, *addr, TripTurnoffCMD, sizeof(TripTurnoffCMD));
 	}
+	else
+		flag = 0;
 	
 #endif
-	udp_client_Send(&ps->sudp, *addr, buff, p->len);
+	if(flag)
+		udp_client_Send(&ps->sudp, *addr, buff, p->len);
 	pbuf_free(p);
    
 }
+
 
 
