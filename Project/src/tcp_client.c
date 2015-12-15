@@ -91,7 +91,6 @@ static void tcp_err_callback(void *arg, err_t err)
 				ps->connecterrf(ps);
 //			tcp_client_close(ps);
 		}
-		
 	}
 }
 
@@ -121,7 +120,7 @@ static err_t Tcp_RecFun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
 	}
 	else
 	{
-		ts->tstate = S_RECEIVE;
+//		ts->tstate = S_RECEIVE;
 		ts->recv(p, arg, err);
 //		udp_client_Send(ts->pserver->upcb_server.upcb, ts->pserver->upcb_server.addr, ts->pserver->upcb_server.port, p->payload, p->len);
 		pbuf_free(p);

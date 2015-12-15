@@ -241,9 +241,10 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 			LedToggle++;
       
     }
-		else
-		{
-		}
+	else
+	{
+		//if((dev_Server_inf.dev_Server_inf.stcp.tstate!=S_CONNECTED)||())
+	}
 #endif
 //		if((Device_Infor.is_connet==1)&&(broadlink_infor.is_connect==0))
 //		{

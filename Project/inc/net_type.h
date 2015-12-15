@@ -11,8 +11,8 @@ typedef enum
 	S_CONNECTED,
 	S_CLOSING,
 	S_CLOSED,
-	S_SEND,
-	S_RECEIVE,
+//	S_SEND,
+//	S_RECEIVE,
 	
 }s_state_t;	
 

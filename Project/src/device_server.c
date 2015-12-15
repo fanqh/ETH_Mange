@@ -12,11 +12,13 @@
 #include "udp_client.h"
 #include "device_server.h"
 #include "netconf.h"
+#include "tcp_client.h"
 
 
 #define MANAGE_UDP_SERVER_PORT  9009	
 #define TCP_SERVER_REMOTE_PORT	4067
 #define TCP_SERVER_LOCAL_PORT	9000
+#define TCP_REMOTE_SERVER_IP  10,10,0,102
 
 /* Private typedef -----------------------------------------------------------*/
 struct FindCMDResp_t
@@ -66,6 +68,7 @@ typedef struct
 }tcp_struct_t;
 */
 
+
 Dev_Server_infor_t dev_Server_inf=
 {
 	0,
@@ -73,6 +76,15 @@ Dev_Server_infor_t dev_Server_inf=
 	{0,S_IDLE,{0},0,TCP_SERVER_LOCAL_PORT,TCP_SERVER_REMOTE_PORT}, //tcp
 	0
 };
+
+s_state_t Tcp_Connect_Remote_Server(void)
+{
+	if(dev_Server_inf.stcp.tip.addr==0)
+		SET_IP4_ADDR(&dev_Server_inf.stcp.tip,TCP_REMOTE_SERVER_IP);
+	if((dev_Server_inf.stcp.tstate==S_IDLE)||(dev_Server_inf.stcp.tstate==S_CLOSED))
+		TCP_Client_Attemp_Connect(&dev_Server_inf.stcp);
+	return dev_Server_inf.stcp.tstate;
+}
 
 
 
@@ -189,7 +201,7 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		Broadlink_Query(CheckState, Port, id );
 		printf("[server]: query\r\n");
 	}
-	else if((buff[0]=0xff)&&(buff[1]==0xEE))
+	else if((buff[0]==0xff)&&(buff[1]==0xEE))
 	{
 		Broadlink_transpond(buff, p->len );
 	}
