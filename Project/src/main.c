@@ -16,6 +16,7 @@
 #include "main.h"
 #include <stdio.h>
 #include "uart_printf.h"
+#include "time2.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -54,7 +55,7 @@ void Delay_ARMJISHU(__IO uint32_t nCount)
   */
 int main(void)
 { 
-	uint32_t time;
+	uint32_t t1,t2;
   /* Setup STM32 system (clocks, Ethernet, GPIO, NVIC) 
         and STM3210C-EVAL resources */
   System_Setup();
@@ -64,13 +65,13 @@ int main(void)
 
   /* Initilaize the LwIP satck */
   LwIP_Init();
-  
+  time2_init();
   /* Infinite loop */
   while (1)
   {  
-		if(LocalTime!=time)
+		if(LocalTime!=t1)
 		{
-			time = LocalTime;
+			t1 = LocalTime;
 			uart_ll_print();
 		}
     /* Periodic tasks */
@@ -105,6 +106,11 @@ void Delay(uint32_t nCount)
 void Time_Update(void)
 {
   LocalTime += SYSTEMTICK_PERIOD_MS;
+}
+
+uint32_t GetLocalTime(void)
+{
+	return LocalTime;
 }
 
   /* 显示系统运行时间 */

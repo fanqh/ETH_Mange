@@ -16,9 +16,9 @@
 
 
 #define MANAGE_UDP_SERVER_PORT  9009	
-#define TCP_SERVER_REMOTE_PORT	4067
+#define TCP_SERVER_REMOTE_PORT	8899
 #define TCP_SERVER_LOCAL_PORT	9000
-#define TCP_REMOTE_SERVER_IP  10,10,0,102
+#define TCP_REMOTE_SERVER_IP  192,168,1,2
 
 /* Private typedef -----------------------------------------------------------*/
 struct FindCMDResp_t
@@ -47,8 +47,12 @@ uint8_t TripFindCMD[] = "00sw=all,2015-11-27,21:16:39,+8";
 uint8_t TripTurnoffCMD[] = "GET /?cmd=200&json={\"sn\":\"SWW6012003000015\",\"port\":0,\"state\":0} HTTP/1.1\r\nHost: 100.100.10.119";
 
 
+#define TK_CMD "AT+YZOUT\r\n"
+
+uint8_t TK_Flag=0;
 /* Private function prototypes -----------------------------------------------*/
 static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
+static err_t server_remote_rec(struct pbuf *p,void *arg, err_t err);
 
 /*
 typedef struct
@@ -69,11 +73,12 @@ typedef struct
 */
 
 
+
 Dev_Server_infor_t dev_Server_inf=
 {
 	0,
 	{S_IDLE,0,0,MANAGE_UDP_SERVER_PORT,MANAGE_UDP_SERVER_PORT,0}, //udp
-	{0,S_IDLE,{0},0,TCP_SERVER_LOCAL_PORT,TCP_SERVER_REMOTE_PORT}, //tcp
+	{0,S_IDLE,{0},0,TCP_SERVER_LOCAL_PORT,TCP_SERVER_REMOTE_PORT,server_remote_rec,0,0,0,0,1}, //tcp
 	0
 };
 
@@ -81,8 +86,7 @@ s_state_t Tcp_Connect_Remote_Server(void)
 {
 	if(dev_Server_inf.stcp.tip.addr==0)
 		SET_IP4_ADDR(&dev_Server_inf.stcp.tip,TCP_REMOTE_SERVER_IP);
-	if((dev_Server_inf.stcp.tstate==S_IDLE)||(dev_Server_inf.stcp.tstate==S_CLOSED))
-		TCP_Client_Attemp_Connect(&dev_Server_inf.stcp);
+	TCP_Client_Attemp_Connect(&dev_Server_inf.stcp);
 	return dev_Server_inf.stcp.tstate;
 }
 
@@ -92,6 +96,39 @@ Dev_Server_infor_t* GetDev_server(void)
 {
 	return &dev_Server_inf;
 }
+
+
+void server_pro(uint32_t time)
+{
+	static uint32_t t1=0;
+	static uint32_t t2=0;
+	static uint32_t tt=0;
+	
+	if((time-t1>=5000)&&(dev_Server_inf.stcp.tstate!=S_CONNECTED))
+	{
+		t1 = time;
+		tt++;
+		Tcp_Connect_Remote_Server();
+		printf("connect to remote : %d.....\r\n",tt);
+	}
+	if((time-t2>=1000)&&(dev_Server_inf.stcp.tstate==S_CONNECTED))
+	{
+		t2 = time;
+		TCP_Send(&dev_Server_inf.stcp, TK_CMD, sizeof(TK_CMD)-1);
+		printf("sent TK,%d\r\n",t2);
+	}
+}
+
+static err_t server_remote_rec(struct pbuf *p,void *arg, err_t err)
+{
+//	udp_client_Send(&dev_Server_inf.sudp, dev_Server_inf.sudp.uip, p->payload, p->len);
+	printf("receve\r\n");
+	pbuf_free(p); 
+	return  err;
+}
+
+
+
 
 /**
   * @brief  Initialize the server application.
@@ -181,11 +218,11 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		}
 			
 	}
-	else if(strstr((char*)buff, "find"))
+	else if(strstr((char*)buff, "findbro"))
 	{
 		uint8_t pw[2] = {0,0};
 		Broadlink_Find(pw);
-		printf("[server]: find\r\n");
+		printf("[server]: findbro\r\n");
 	}
 	else if(strstr((char*)buff,"keepalive"))
 	{

@@ -25,6 +25,7 @@
 #include "stm32_eth.h"
 #include "main.h"
 #include "uart_printf.h"
+#include "time2.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -57,6 +58,7 @@ void NMI_Handler(void)
 void HardFault_Handler(void)
 {
   /* Go to infinite loop when Hard Fault exception occurs */
+	NVIC_SystemReset();
   while (1)
   {}
 }
@@ -165,6 +167,15 @@ void USART2_IRQHandler(void)
 		USART_ClearITPendingBit(USART2, USART_IT_TC);
 		printing = 0;
 		uart_print_tx_complete_cb();
+	}
+}
+
+void TIM2_IRQHandler(void)
+{
+	if(TIM_GetITStatus(TIM2, TIM_IT_Update)==SET)
+	{
+		TIM_ClearITPendingBit(TIM2, TIM_IT_Update);
+		time2_pro();
 	}
 }
 

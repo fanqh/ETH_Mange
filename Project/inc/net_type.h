@@ -28,8 +28,8 @@ typedef struct
 	void (* connectedf)(void *arg);	
 	void (*connecterrf)(void *arg);
 	void (*connectclose)(void *arg);
-	
 	void *arg;
+	uint8_t keepconnect;
 }tcp_struct_t;
 
 typedef struct

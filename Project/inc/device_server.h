@@ -36,6 +36,7 @@ typedef struct
 err_t udp_server_init(void *pd);
 Dev_Server_infor_t* GetDev_server(void);
 s_state_t Tcp_Connect_Remote_Server(void);
+void server_pro(uint32_t time);
 
 
 

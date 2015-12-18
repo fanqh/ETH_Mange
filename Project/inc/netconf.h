@@ -84,6 +84,7 @@ void LwIP_Init(void);
 void LwIP_Pkt_Handle(void);
 void LwIP_Periodic_Handle(__IO uint32_t localtime);
 void Display_Periodic_Handle(__IO uint32_t localtime);
+void SET_IP4_ADDR(struct ip_addr *ipaddr,unsigned char a,unsigned char b,unsigned char c,unsigned char d);
 
 
 #ifdef __cplusplus

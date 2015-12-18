@@ -56,17 +56,7 @@ err_t tcp_client_recv(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err
 struct ip_addr ip_udp_server;
 
 
-/***********************************************************************
-函数名称：My_IP4_ADDR(void)
-功    能：IP地址的装配
-***********************************************************************/
-void SET_IP4_ADDR(struct ip_addr *ipaddr,unsigned char a,unsigned char b,unsigned char c,unsigned char d)
-{
-	ipaddr->addr = htonl(((u32_t)((a) & 0xff) << 24) | \
-                               ((u32_t)((b) & 0xff) << 16) | \
-                               ((u32_t)((c) & 0xff) << 8) | \
-                                (u32_t)((d) & 0xff));
-}
+
 
 
 

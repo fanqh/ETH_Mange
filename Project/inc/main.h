@@ -46,6 +46,7 @@
 void Time_Update(void);
 void Delay(uint32_t nCount);
 void Delay_ARMJISHU(__IO uint32_t nCount);
+uint32_t GetLocalTime(void);
 
 
 #ifdef __cplusplus

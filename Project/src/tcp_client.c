@@ -19,8 +19,8 @@ err_t TCP_Client_Attemp_Connect(tcp_struct_t *ts)
 {
 	err_t ret = ERR_OK;
 	
-	if(ts->tstate==S_CONNECTED)
-		ts->connectedf(ts);
+//	if(ts->tstate==S_CONNECTED)
+//		ts->connectedf(ts);
     if(ts->tstate==S_IDLE)
 	{
 	    ts->tpcb = tcp_new();				//新建一个PCB	
@@ -38,6 +38,11 @@ err_t TCP_Client_Attemp_Connect(tcp_struct_t *ts)
 	{
 		tcp_arg(ts->tpcb, ts);  //回调函数参数传递
 		tcp_err(ts->tpcb, tcp_err_callback);
+	}
+	else if(ret=ERR_ISCONN)
+	{
+		tcp_client_close(ts);
+//		tcp_connect(ts->tpcb, &(ts->tip), ts->tremote_port, TCP_Client_Connected);
 	}
 	ts->retry = 0;
 	return ret;	
@@ -80,16 +85,18 @@ static void tcp_err_callback(void *arg, err_t err)
 	else
 	{
 		printf("[tcp_client]: ERR %d\r\n", err);
-		ps->retry ++;
-		if(ps->retry<2)
-			TCP_Client_Attemp_Connect(ps); //直接去链接，还是需要等待一段时间链接，需要测试
-			//set_timer4_countTime(TIMER_5000MS);
-		else
+//		ps->retry ++;
+//		ps->tstate = S_CLOSED;
+//		if(ps->retry<1)
+//			TCP_Client_Attemp_Connect(ps); //直接去链接，还是需要等待一段时间链接，需要测试
+//			//set_timer4_countTime(TIMER_5000MS);
+//		else
 		{
-			ps->tstate = S_CLOSED;
+			
 			if(ps->connecterrf!=NULL)
 				ps->connecterrf(ps);
 //			tcp_client_close(ps);
+			//ps->tstate = S_CLOSED;
 		}
 	}
 }
@@ -102,7 +109,7 @@ void tcp_client_close( tcp_struct_t* ts)
 		tcp_arg(ts->tpcb, NULL);  			
 		tcp_recv(ts->tpcb, NULL);
 		tcp_poll(ts->tpcb, NULL, 0); 
-		tcp_close(ts->tpcb);
+		tcp_abort(ts->tpcb);
 	}
 	if(ts->connectclose!=NULL)
 		ts->connectclose(ts);
@@ -125,8 +132,11 @@ static err_t Tcp_RecFun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t e
 //		udp_client_Send(ts->pserver->upcb_server.upcb, ts->pserver->upcb_server.addr, ts->pserver->upcb_server.port, p->payload, p->len);
 		pbuf_free(p);
 	}
-	ts->tstate = S_CLOSED;
-	tcp_client_close(ts);
+	if(ts->keepconnect!=1)
+	{
+		ts->tstate = S_CLOSED;
+		tcp_client_close(ts);
+	}
 	return err;
 }
 
@@ -145,21 +155,21 @@ err_t TCP_Send(tcp_struct_t *es, uint8_t *msg, uint16_t len)
 	ptr->payload = msg;
 	ptr->len = ptr->tot_len = len;
 	
-	while(ptr->len<=tcp_sndbuf(es->tpcb)&&(wr_err == ERR_OK)&&(ptr!=NULL))
+	//while(ptr->len<=tcp_sndbuf(es->tpcb)&&(wr_err == ERR_OK)&&(ptr!=NULL))
 	{
 		wr_err = tcp_write(es->tpcb, ptr->payload, ptr->len, 1); 
-		if(wr_err==ERR_OK)
-		{
-			ptr = ptr->next;
-			if(ptr!=NULL)
-				pbuf_ref(ptr);
-			
-		}
-		else 
-		{
-			pbuf_free(ptr);
-			return wr_err;
-		}
+//		if(wr_err==ERR_OK)
+//		{
+//			ptr = ptr->next;
+//			if(ptr!=NULL)
+//				pbuf_ref(ptr);
+//			
+//		}
+//		else 
+//		{
+//			pbuf_free(ptr);
+//			return wr_err;
+//		}
 	}
 	pbuf_free(ptr);
 	return wr_err;

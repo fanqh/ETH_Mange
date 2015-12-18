@@ -35,6 +35,7 @@
 #include "smart_switch.h"
 #include "revogi.h"
 #include "device_server.h"
+#include "time2.h"
 
 /* Private typedef -----------------------------------------------------------*/
 #define LCD_DELAY             3000
@@ -62,13 +63,25 @@ static uint32_t IPaddress = 0;
 
 __IO uint32_t DisplayTimer = 0;
 uint8_t LedToggle = 4;
-uint8_t	Server = 0;
 
 /* Private function prototypes -----------------------------------------------*/
 //extern void client_init(void);
 
 device_infor_t Device_Infor;
 
+
+
+/***********************************************************************
+函数名称：My_IP4_ADDR(void)
+功    能：IP地址的装配
+***********************************************************************/
+void SET_IP4_ADDR(struct ip_addr *ipaddr,unsigned char a,unsigned char b,unsigned char c,unsigned char d)
+{
+	ipaddr->addr = htonl(((u32_t)((a) & 0xff) << 24) | \
+                               ((u32_t)((b) & 0xff) << 16) | \
+                               ((u32_t)((c) & 0xff) << 8) | \
+                                (u32_t)((d) & 0xff));
+}
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -91,18 +104,9 @@ void LwIP_Init(void)
   /* Initializes the memory pools defined by MEMP_NUM_x.*/
   memp_init();
 
-
-#if LWIP_DHCP
   ipaddr.addr = 0;
   netmask.addr = 0;
   gw.addr = 0;
-
-#else
-  IP4_ADDR(&ipaddr, 192, 168, 1, 6);
-  IP4_ADDR(&netmask, 255, 255, 255, 0);
-  IP4_ADDR(&gw, 192, 168, 1, 1);
-#endif
-
   Set_MAC_Address(macaddress);
 
   /* - netif_add(struct netif *netif, struct ip_addr *ipaddr,
@@ -193,7 +197,6 @@ extern void ETH_GetMACAddress(uint32_t MacAddr, uint8_t *Addr);
   * @param  localtime: the current LocalTime value
   * @retval None
   */
-uint8_t flag_server=0;
 void Display_Periodic_Handle(__IO uint32_t localtime)
 { 
   uint8_t macaddress[6]; 
@@ -207,7 +210,6 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
     if (IPaddress != netif.ip_addr.addr)
     {
 		IPaddress = netif.ip_addr.addr;					
-		#if LWIP_DHCP
 		if (netif.flags & NETIF_FLAG_DHCP)
 		{        
 		  Device_Infor.server = GetDev_server();
@@ -215,17 +217,12 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 		  ETH_GetMACAddress(0, Device_Infor.macaddr);
 		  Device_Infor.ConnectState = 1;
 		  Device_Infor.tcp_num = Device_Infor.udp_num = 0;
-		}
-#endif          
+		}         
 		ETH_GetMACAddress(0, macaddress);
 		printf("=>Your MAC are configured: %X:%X:%X:%X:%X:%X\r\n", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
 		printf("=>Your ip are configured: %d,%d,%d,%d\r\n",(uint8_t)(IPaddress), (uint8_t)(IPaddress >> 8), (uint8_t)(IPaddress >> 16), (uint8_t)(IPaddress >> 24));
 		printf("=>Your gw are configured: %d,%d,%d,%d\r\n",(uint8_t)(netif.gw.addr), (uint8_t)(netif.gw.addr >> 8), (uint8_t)(netif.gw.addr >> 16), (uint8_t)(netif.gw.addr >> 24));    
-		if(flag_server==0)
-		{
-		  flag_server = 1;
-		  udp_server_init(&Device_Infor);
-		}
+		udp_server_init(&Device_Infor);
 //		broadlink_init(&Device_Infor);
 		Switch_Init(&Device_Infor);
 		revogi_Init(&Device_Infor);  
@@ -243,7 +240,7 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
     }
 	else
 	{
-		//if((dev_Server_inf.dev_Server_inf.stcp.tstate!=S_CONNECTED)||())
+		
 	}
 #endif
 //		if((Device_Infor.is_connet==1)&&(broadlink_infor.is_connect==0))
@@ -253,6 +250,8 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 //		}
 		
   } 
+  if(IPaddress!=0)
+	server_pro(GetTimeCount());
 }
 
 /******************* (C) COPYRIGHT 2009 STMicroelectronics *****END OF FILE****/

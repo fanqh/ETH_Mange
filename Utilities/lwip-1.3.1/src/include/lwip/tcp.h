@@ -167,7 +167,7 @@ u32_t            tcp_update_rcv_ann_wnd(struct tcp_pcb *pcb);
 #define TCP_HLEN 20
 
 #ifndef TCP_TMR_INTERVAL
-#define TCP_TMR_INTERVAL       250  /* The TCP timer interval in milliseconds. */
+#define TCP_TMR_INTERVAL       10//250  /* The TCP timer interval in milliseconds. */
 #endif /* TCP_TMR_INTERVAL */
 
 #ifndef TCP_FAST_INTERVAL
