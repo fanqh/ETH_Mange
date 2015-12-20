@@ -44,6 +44,7 @@
  */
  
 #include "lwip/opt.h"
+#include "stdio.h"
 
 #if LWIP_ARP /* don't build if not configured for use in lwipopts.h */
 

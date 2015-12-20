@@ -44,6 +44,7 @@
  */
 #include "lwipopts.h"
 #include "lwip/debug.h"
+#include "stdio.h"
 
 /*
    -----------------------------------------------
@@ -1568,16 +1569,31 @@
    ---------- Debugging options ----------
    ---------------------------------------
 */
+#if 1
+#define U8_F "c"
+#define S8_F "c"
+//#define X8_F "x"
+#define U16_F "u"
+#define S16_F "d"
+#define X16_F "x"
+#define U32_F "u"
+#define S32_F "d"
+#define X32_F "x"
+//extern void UARTprintf(const char *pcString, ...);
+#define LWIP_PLATFORM_DIAG(x) {printf x;}
+#define LWIP_DEBUG
+#endif
 /**
  * LWIP_DBG_MIN_LEVEL: After masking, the value of the debug is
  * compared against this value. If it is smaller, then debugging
  * messages are written.
  */
 #ifndef LWIP_DBG_MIN_LEVEL
-#define LWIP_DBG_MIN_LEVEL              LWIP_DBG_LEVEL_OFF
+#define LWIP_DBG_MIN_LEVEL              LWIP_DBG_LEVEL_OFF//LWIP_DBG_LEVEL_WARNING
 #endif
 
 /**
+
  * LWIP_DBG_TYPES_ON: A mask that can be used to globally enable/disable
  * debug messages of certain types.
  */
@@ -1694,7 +1710,7 @@
  * TCP_DEBUG: Enable debugging for TCP.
  */
 #ifndef TCP_DEBUG
-#define TCP_DEBUG                       LWIP_DBG_OFF
+#define TCP_DEBUG                       LWIP_DBG_ON
 #endif
 
 /**

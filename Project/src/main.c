@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include "uart_printf.h"
 #include "time2.h"
+#include "lwip/opt.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -66,6 +67,7 @@ int main(void)
   /* Initilaize the LwIP satck */
   LwIP_Init();
   time2_init();
+	LWIP_PLATFORM_DIAG(("working....."))
   /* Infinite loop */
   while (1)
   {  

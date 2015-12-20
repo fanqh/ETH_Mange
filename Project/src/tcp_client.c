@@ -39,9 +39,9 @@ err_t TCP_Client_Attemp_Connect(tcp_struct_t *ts)
 		tcp_arg(ts->tpcb, ts);  //回调函数参数传递
 		tcp_err(ts->tpcb, tcp_err_callback);
 	}
-	else if(ret=ERR_ISCONN)
+	else if(ret==ERR_ISCONN)
 	{
-		tcp_client_close(ts);
+//		tcp_client_close(ts);
 //		tcp_connect(ts->tpcb, &(ts->tip), ts->tremote_port, TCP_Client_Connected);
 	}
 	ts->retry = 0;
