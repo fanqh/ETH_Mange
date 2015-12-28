@@ -51,6 +51,7 @@ uint8_t TripTurnoffCMD[] = "GET /?cmd=200&json={\"sn\":\"SWW6012003000015\",\"po
 
 #define TK_CMD "TK:<<"
 #define TK_CMD_REC "TK:0<<"
+#define MAC_CMD "MC:<<"
 
 uint8_t TK_Flag=0;
 /* Private function prototypes -----------------------------------------------*/
@@ -114,12 +115,8 @@ void server_pro(uint32_t time)
 		Tcp_Connect_Remote_Server();
 		printf("connect to remote : %d.....\r\n",tt);
 	}
-	if((time-t2>=1000)&&(dev_Server_inf.stcp.tstate==S_CONNECTED))
-	{
-		t2 = time;
-		TCP_Send(&dev_Server_inf.stcp, TK_CMD, sizeof(TK_CMD)-1);
-		printf("sent TK,%d\r\n",t2);
-	}
+	if(GetLocalTime()-TK_PreTime>=30000*6)
+		tcp_client_close(&dev_Server_inf.stcp);
 }
 
 static err_t server_remote_rec(struct pbuf *p,void *arg, err_t err)
@@ -131,11 +128,25 @@ static err_t server_remote_rec(struct pbuf *p,void *arg, err_t err)
 	else
 		return ERR_VAL;
 			
-	if(strstr(buff, TK_CMD_REC)!=NULL)
+	if(strstr(buff, TK_CMD)!=NULL)
 	{
 		TK_PreTime = GetLocalTime();
+		TCP_Send(&dev_Server_inf.stcp, TK_CMD, sizeof(TK_CMD)-1);
+		printf("receve\r\n");
 	}
-	printf("receve\r\n");
+	else if(strstr(buff, MAC_CMD)!=NULL)
+	{
+		uint8_t cmd_res[12];
+		device_infor_t *pdev;
+		
+		pdev = dev_Server_inf.arg;
+		memcpy(cmd_res,MAC_CMD,3);
+		memcpy(&cmd_res[3],pdev->macaddr,6);
+		memcpy(&cmd_res[9], "<<",2);
+		
+		TCP_Send(&dev_Server_inf.stcp, cmd_res, sizeof(cmd_res)-1);
+	}
+	
 	pbuf_free(p); 
 	return  err;
 }
@@ -151,7 +162,7 @@ static err_t server_remote_rec(struct pbuf *p,void *arg, err_t err)
 err_t udp_server_init(void *pd)
 {
     err_t ret =ERR_OK ;                               
-
+	
 	dev_Server_inf.sudp.upcb = udp_new();
 	if(dev_Server_inf.sudp.upcb==NULL)
 		return ERR_BUF;
