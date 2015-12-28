@@ -37,6 +37,8 @@ const char maccmd[] = "mac:";
 const char ipcmd[]="IP:";
 const char FindCMDResp[] = {'c','m','d',':',0,0,0,0,0,0,'I','P',':',0,0,0,0};
 
+static uint32_t TK_PreTime = 0;
+
 //		smart_switch_infor_t  pSwitch_infor;
 uint8_t SwitchAdvCMD[] = "YZ-RECOSCAN";
 uint8_t SmartPlugTurnOnCMD[] = "AT+YZSWITCH=1,ON,201511222133\r\n";
@@ -47,7 +49,8 @@ uint8_t TripFindCMD[] = "00sw=all,2015-11-27,21:16:39,+8";
 uint8_t TripTurnoffCMD[] = "GET /?cmd=200&json={\"sn\":\"SWW6012003000015\",\"port\":0,\"state\":0} HTTP/1.1\r\nHost: 100.100.10.119";
 
 
-#define TK_CMD "AT+YZOUT\r\n"
+#define TK_CMD "TK:<<"
+#define TK_CMD_REC "TK:0<<"
 
 uint8_t TK_Flag=0;
 /* Private function prototypes -----------------------------------------------*/
@@ -104,7 +107,7 @@ void server_pro(uint32_t time)
 	static uint32_t t2=0;
 	static uint32_t tt=0;
 	
-	if((time-t1>=5000)&&(dev_Server_inf.stcp.tstate!=S_CONNECTED))
+	if((dev_Server_inf.stcp.tstate!=S_CONNECTED)&&(time-t1>=3000))
 	{
 		t1 = time;
 		tt++;
@@ -121,7 +124,17 @@ void server_pro(uint32_t time)
 
 static err_t server_remote_rec(struct pbuf *p,void *arg, err_t err)
 {
-//	udp_client_Send(&dev_Server_inf.sudp, dev_Server_inf.sudp.uip, p->payload, p->len);
+	uint8_t *buff;
+	
+	if(p->len>0)
+		buff = p->payload;	
+	else
+		return ERR_VAL;
+			
+	if(strstr(buff, TK_CMD_REC)!=NULL)
+	{
+		TK_PreTime = GetLocalTime();
+	}
 	printf("receve\r\n");
 	pbuf_free(p); 
 	return  err;

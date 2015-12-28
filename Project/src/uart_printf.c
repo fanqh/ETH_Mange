@@ -15,13 +15,13 @@ int in = 0;
 int out = 0;
 int printing = 0;
 	
-#ifdef __GNUC__
-  /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
-     set to 'Yes') calls __io_putchar() */
-  #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-#else
-  #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-#endif /* __GNUC__ */	
+//#ifdef __GNUC__
+//  /* With GCC/RAISONANCE, small printf (option LD Linker->Libraries->Small printf
+//     set to 'Yes') calls __io_putchar() */
+//  #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
+//#else
+//  #define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
+//#endif /* __GNUC__ */	
 
 
 static void uart_print(void);	
@@ -68,6 +68,11 @@ void uart_print(void)
 {
 	uint32_t i;
 
+	if(in>=PRINT_BUFFER_SIZE || out >=PRINT_BUFFER_SIZE)
+	{
+		printf("printf: err,,,,,,");
+		return;
+	}
 	if (in < out) 
 	{
 		for(i=0; i<((PRINT_BUFFER_SIZE - out)&&(in!=out)); i++)
@@ -89,6 +94,12 @@ void uart_print(void)
 	{
 		for(i=0; (i<(in-out)&&(in!=out)); i++)
 		{
+			
+				if(in>=PRINT_BUFFER_SIZE || out >=PRINT_BUFFER_SIZE)
+				{
+					printf("printf1: err,,,,,,");
+					return;
+				}
 			if(printing==1)
 				return ;
 			else
@@ -127,16 +138,16 @@ static int uart_write(uint8_t *ptr, int32_t len)
     uart_ll_print();
 	return len;
 }	
-/**
-  * @brief  Retargets the C library printf function to the USART.
-  * @param  None
-  * @retval None
-  */
-PUTCHAR_PROTOTYPE
-{
-	uart_write((uint8_t*)&ch, 1);
-  return ch;
-}
+///**
+//  * @brief  Retargets the C library printf function to the USART.
+//  * @param  None
+//  * @retval None
+//  */
+//PUTCHAR_PROTOTYPE
+//{
+//	uart_write((uint8_t*)&ch, 1);
+//  return ch;
+//}
 
 void uart_print_tx_complete_cb(void) 
 {

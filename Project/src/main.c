@@ -67,14 +67,14 @@ int main(void)
   /* Initilaize the LwIP satck */
   LwIP_Init();
   time2_init();
-	LWIP_PLATFORM_DIAG(("working....."))
+  LWIP_PLATFORM_DIAG(("working....."))
   /* Infinite loop */
   while (1)
   {  
 		if(LocalTime!=t1)
 		{
 			t1 = LocalTime;
-			uart_ll_print();
+//			uart_ll_print();
 		}
     /* Periodic tasks */
     System_Periodic_Handle();

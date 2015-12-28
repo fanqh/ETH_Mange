@@ -39,7 +39,7 @@ err_t TCP_Client_Attemp_Connect(tcp_struct_t *ts)
 		tcp_arg(ts->tpcb, ts);  //回调函数参数传递
 		tcp_err(ts->tpcb, tcp_err_callback);
 	}
-	else if(ret==ERR_ISCONN)
+	else
 	{
 //		tcp_client_close(ts);
 //		tcp_connect(ts->tpcb, &(ts->tip), ts->tremote_port, TCP_Client_Connected);
@@ -95,7 +95,7 @@ static void tcp_err_callback(void *arg, err_t err)
 			
 			if(ps->connecterrf!=NULL)
 				ps->connecterrf(ps);
-//			tcp_client_close(ps);
+			tcp_client_close(ps);
 			//ps->tstate = S_CLOSED;
 		}
 	}
@@ -109,7 +109,7 @@ void tcp_client_close( tcp_struct_t* ts)
 		tcp_arg(ts->tpcb, NULL);  			
 		tcp_recv(ts->tpcb, NULL);
 		tcp_poll(ts->tpcb, NULL, 0); 
-		tcp_abort(ts->tpcb);
+		tcp_close(ts->tpcb);
 	}
 	if(ts->connectclose!=NULL)
 		ts->connectclose(ts);
