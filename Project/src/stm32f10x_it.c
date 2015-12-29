@@ -59,7 +59,7 @@ void HardFault_Handler(void)
 {
   /* Go to infinite loop when Hard Fault exception occurs */
 //	NVIC_SystemReset();
-	return ;
+//	return ;
   while (1)
   {}
 }

@@ -25,7 +25,7 @@
 #include "stm32f10x_rtc.h"
 #include "stm32f10x_pwr.h"
 #include "stm32f10x_can.h"
-#include "ARMJISHU_TouchScreen.h"
+//#include "ARMJISHU_TouchScreen.h"
 
 extern void Delay_ARMJISHU(__IO uint32_t nCount);
 extern void Ethernet_MDIO_Config(void);
@@ -104,44 +104,14 @@ void System_Setup(void)
   /* to assure Ethernet Phy work well */ //lihao
   Ethernet_Security(); 
   
-  /* ADC configuration */
-//  ADC_Configuration();
-
-  /* Configure the BEEP ·äÃùÆ÷ */
-  BEEP_Configuration();
-  STM_EVAL_BEEPOn();
-  
   /* Configure the USART port */  
   USART_COM1_Init();
-  
-  STM_EVAL_BEEPOff();
-
-  /* Initialize the STM3210C-EVAL's LCD */
-STM3210C_LCD_Init();
-
-  STM_EVAL_BEEPOff();
-	
-#if LCD
-        
-  /* Clear the LCD */
-  LCD_Clear(Blue);
-
-  /* Set the LCD Back Color */
-  LCD_SetBackColor(Blue);
-
-  /* Set the LCD Text Color */
-  LCD_SetTextColor(White);
-  
-  ADS7843_Init();
-#endif
   
   /* RTC TEST */
   //RTC_Test();
 
   /* Configure the Ethernet peripheral */
   Ethernet_Configuration();
-
-//  GPIO_KEY_Config();
   
   /* SystTick configuration: an interrupt every 10ms */
   RCC_GetClocksFreq(&RCC_Clocks);
@@ -150,9 +120,6 @@ STM3210C_LCD_Init();
   /* Update the SysTick IRQ priority should be higher than the Ethernet IRQ */
   /* The Localtime should be updated during the Ethernet packets processing */
   NVIC_SetPriority (SysTick_IRQn, 1);  
-  
-  /* Configure the Key button */ 
-  //STM_EVAL_PBInit(Button_KEY, Mode_GPIO);
 }
 
 
@@ -785,11 +752,11 @@ void RTC_Configuration(void)
   RTC_WaitForLastTask();
 }
 
-void Delay_TouchScreen(__IO uint32_t nCount)
-{
-  for (; nCount != 0; nCount--)
-    ARMJISHU_TouchScreen();
-}
+//void Delay_TouchScreen(__IO uint32_t nCount)
+//{
+//  for (; nCount != 0; nCount--)
+//    ARMJISHU_TouchScreen();
+//}
 
 
 void  RTC_Test(void)

@@ -20,6 +20,9 @@
 #define TCP_SERVER_LOCAL_PORT	9000
 #define TCP_REMOTE_SERVER_IP  192,168,1,2
 
+#define VERSION "V1.00"
+#define  SUPPORT_DEV_ONLINE_MAX  64
+
 /* Private typedef -----------------------------------------------------------*/
 struct FindCMDResp_t
 {
@@ -28,6 +31,14 @@ struct FindCMDResp_t
 	char ipcmd[3];
 	struct ip_addr local_ip;
 }find_resp;
+
+
+typedef struct 
+{
+	uint8_t type;
+	uint8_t mac[6];
+	uint32_t time;
+}Device_t;
 
 
 /* Private define ------------------------------------------------------------*/                                                                                   
@@ -52,30 +63,89 @@ uint8_t TripTurnoffCMD[] = "GET /?cmd=200&json={\"sn\":\"SWW6012003000015\",\"po
 #define TK_CMD "TK:<<"
 #define TK_CMD_REC "TK:0<<"
 #define MAC_CMD "MC:<<"
+#define VR_CMD "VR:<<"
+#define LT_CMD "LT:"
+#define CM_CMD "CM:commandtype:"
+#define SG_CMD "SG:"
+#define SX_CMD　"SX:<<"
 
+Device_t Dev_list[SUPPORT_DEV_ONLINE_MAX];
 uint8_t TK_Flag=0;
 /* Private function prototypes -----------------------------------------------*/
 static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
 static err_t server_remote_rec(struct pbuf *p,void *arg, err_t err);
 
-/*
-typedef struct
-{
-	uint16_t retry;
-	s_state_t tstate;
-	struct ip_addr  tip;
-	struct tcp_pcb  *tpcb;
-	uint16_t tlocal_port;
-	uint16_t tremote_port;
-	err_t (* recv)(struct pbuf *p,void *arg, err_t err);
-	void (* connectedf)(void *arg);	
-	void (*connecterrf)(void *arg);
-	void (*connectclose)(void *arg);
-	
-	void *arg;
-}tcp_struct_t;
-*/
 
+// -1: 没有找到相同的mac
+// 0--63 找到了相同的mac
+int dev_find_list(Device_t dev)
+{
+	uint8_t i,j;
+	
+	for(i=0; i<SUPPORT_DEV_ONLINE_MAX; i++)
+	{
+		if((Dev_list[i].type<=3)&&(Dev_list[i].type!=0))  // 1 2 3
+		{
+			for(j=0; j<6; j++)
+			{
+				if(dev.mac[j]!=Dev_list[i].mac[j])
+					break;
+			}
+			if(j==6)
+				return i;
+		}
+	}
+	return -1;
+}
+
+//-1 没有空的MAC
+//0--63 返回空的list
+int dev_find_Null_list(void)
+{
+	uint8_t i;
+	
+	for(i=0; i<SUPPORT_DEV_ONLINE_MAX; i++)
+	{
+		if((Dev_list[i].type>3)||(Dev_list[i].type==0))  
+			return i;
+	}
+	return -1;
+}
+
+int dev_insert_list(Device_t dev)
+{
+	int a;
+	
+	if(!((dev.type==1)||(dev.type==2)||(dev.type==3)))
+		return -1;
+	
+	if(dev_find_list(dev)==-1)
+	{
+		a = dev_find_Null_list();
+		if((a>=0)&&(a<=SUPPORT_DEV_ONLINE_MAX-1))
+		{
+			memcpy(&Dev_list[a], &dev, sizeof( Device_t));
+			return a;
+		}
+			
+	}
+	return -1;
+}
+int dev_refresh_list(Device_t dev)
+{
+	int n;
+	
+	n = dev_find_list(dev);
+	if(n!=-1)
+	{
+		Dev_list[n].time = GetLocalTime();
+		return n;
+	}
+	else
+		dev_insert_list(dev);
+	return 1;
+		
+}
 
 
 Dev_Server_infor_t dev_Server_inf=
@@ -108,23 +178,24 @@ void server_pro(uint32_t time)
 	static uint32_t t2=0;
 	static uint32_t tt=0;
 	
-	if((dev_Server_inf.stcp.tstate!=S_CONNECTED)&&(time-t1>=3000))
+	if((dev_Server_inf.stcp.tstate!=S_CONNECTED)&&(time-t1>=5000))
 	{
 		t1 = time;
 		tt++;
 		Tcp_Connect_Remote_Server();
 		printf("connect to remote : %d.....\r\n",tt);
 	}
-	if(GetLocalTime()-TK_PreTime>=30000*6)
-		tcp_client_close(&dev_Server_inf.stcp);
+	//if(GetLocalTime()-TK_PreTime>=30000*6)
+	//	tcp_client_close(&dev_Server_inf.stcp);
 }
 
 static err_t server_remote_rec(struct pbuf *p,void *arg, err_t err)
 {
-	uint8_t *buff;
+	char *buff;
+	char *ptr;
 	
 	if(p->len>0)
-		buff = p->payload;	
+		buff = (char*)p->payload;	
 	else
 		return ERR_VAL;
 			
@@ -144,7 +215,30 @@ static err_t server_remote_rec(struct pbuf *p,void *arg, err_t err)
 		memcpy(&cmd_res[3],pdev->macaddr,6);
 		memcpy(&cmd_res[9], "<<",2);
 		
-		TCP_Send(&dev_Server_inf.stcp, cmd_res, sizeof(cmd_res)-1);
+		TCP_Send(&dev_Server_inf.stcp, cmd_res, sizeof(cmd_res));
+	}
+	else if(strstr(buff,VR_CMD)!=NULL)
+	{
+		uint8_t cmd_res[12];
+		
+		memcpy(cmd_res, "VR:",3);
+		memcpy(&cmd_res[3], VERSION,sizeof(VERSION));
+		memcpy(&cmd_res[8],"<<",2);
+		TCP_Send(&dev_Server_inf.stcp, cmd_res, sizeof(cmd_res));
+	}
+	else if((ptr = strstr(buff,CM_CMD))!=NULL)
+	{
+		uint8_t type;
+		
+		type = *(ptr+15);
+		switch (type)
+		{
+			case 1:
+				break;
+			case 2:
+				break;
+			
+		}
 	}
 	
 	pbuf_free(p); 

@@ -129,9 +129,6 @@ static void broadlink_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf 
 	broadlink_infor_t *pb;
 	Dev_Server_infor_t *ps;
 
-	
-
-	
 	memcpy(rec,p->payload,p->len);
 	if((rec[0]==0xFF)&&(rec[1]==0xEE))
 	{
