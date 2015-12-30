@@ -222,9 +222,9 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 		printf("=>Your MAC are configured: %X:%X:%X:%X:%X:%X\r\n", macaddress[0], macaddress[1], macaddress[2], macaddress[3], macaddress[4], macaddress[5]);
 		printf("=>Your ip are configured: %d,%d,%d,%d\r\n",(uint8_t)(IPaddress), (uint8_t)(IPaddress >> 8), (uint8_t)(IPaddress >> 16), (uint8_t)(IPaddress >> 24));
 		printf("=>Your gw are configured: %d,%d,%d,%d\r\n",(uint8_t)(netif.gw.addr), (uint8_t)(netif.gw.addr >> 8), (uint8_t)(netif.gw.addr >> 16), (uint8_t)(netif.gw.addr >> 24));    
-//		udp_server_init(&Device_Infor);
+		udp_server_init(&Device_Infor);
 //		broadlink_init(&Device_Infor);
-//		Switch_Init(&Device_Infor);
+		Switch_Init(&Device_Infor);
 //		revogi_Init(&Device_Infor);  
     }
 

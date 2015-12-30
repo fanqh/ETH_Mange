@@ -115,30 +115,7 @@ uint32_t GetLocalTime(void)
 	return LocalTime;
 }
 
-  /* 显示系统运行时间 */
-void LCD_Time_Update(uint32_t localtime)
-{
-  static uint32_t LcdDisplayTimer=20000;
-  uint32_t TimeVar;
-  uint32_t THH = 0, TMM = 0, TSS = 0;
-  uint8_t  TimeStr[20];
 
-  /* 1 s */
-  if (localtime >= (LcdDisplayTimer + 1000)) 
-  {
-    LcdDisplayTimer = localtime;
-    TimeVar = LcdDisplayTimer/1000;
-    /* Compute  hours */
-    THH = (TimeVar / 3600)%24;
-    /* Compute minutes */
-    TMM = (TimeVar % 3600) / 60;
-    /* Compute seconds */
-    TSS = (TimeVar % 3600) % 60;
-
-    sprintf((char *)TimeStr, " Run Time: %0.2d:%0.2d:%0.2d ", THH, TMM, TSS);
-    LCD_DisplayStringLine(Line0, TimeStr);
-  }
-}
 
 /**
   * @brief  Handles the periodic tasks of the system
@@ -150,9 +127,6 @@ void System_Periodic_Handle(void)
   /* Update the LCD display and the LEDs status */
   /* Manage the IP address setting */
   Display_Periodic_Handle(LocalTime);
-
-  /* 显示系统运行时间 */
-  LCD_Time_Update(LocalTime);
   
   /* LwIP periodic services are done here */
   LwIP_Periodic_Handle(LocalTime);
@@ -179,26 +153,22 @@ void Check_ETH_PHY(void)
     {  
       /* Set Ethernet speed to 10M following the autonegotiation */    
       printf("==>ETH_Speed_10M!\r\n");
-      LCD_DisplayStringLine(Line2, "     ETH_Speed_10M  ");
     }
     else
     {   
       /* Set Ethernet speed to 100M following the autonegotiation */ 
       printf("==>ETH_Speed_100M!\n\r");     
-      LCD_DisplayStringLine(Line2, "     ETH_Speed_100M ");
     } 
     /* Configure the MAC with the Duplex Mode fixed by the autonegotiation process */
     if((Show_ETH_PHY(17) & 0xA000) != (uint32_t)RESET)
     {
       /* Set Ethernet duplex mode to FullDuplex following the autonegotiation */
       printf("==>ETH_Mode_FullDuplex!\n\r");
-      LCD_DisplayStringLine(Line3, " ETH_Mode_FullDuplex");
     }
     else
     {
       /* Set Ethernet duplex mode to HalfDuplex following the autonegotiation */
       printf("==>ETH_Mode_HalfDuplex!\n\r");
-      LCD_DisplayStringLine(Line3, " ETH_Mode_HalfDuplex");
     }
 }
 

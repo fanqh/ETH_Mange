@@ -133,7 +133,7 @@ void SysTick_Handler(void)
 {
   /* Update the LocalTime by adding SYSTEMTICK_PERIOD_MS each SysTick interrupt */
   Time_Update();
-  Key_315M_Wireless_Display();
+//  Key_315M_Wireless_Display();
 }
 
 /******************************************************************************/

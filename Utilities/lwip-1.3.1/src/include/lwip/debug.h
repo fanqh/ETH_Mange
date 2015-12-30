@@ -34,7 +34,7 @@
 
 #include "lwip/arch.h"
 
-//#define LWIP_DEBUG
+#define LWIP_DEBUG
 /** lower two bits indicate debug level
  * - 0 off
  * - 1 warning

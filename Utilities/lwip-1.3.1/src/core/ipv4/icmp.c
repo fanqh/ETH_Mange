@@ -89,8 +89,8 @@ icmp_input(struct pbuf *p, struct netif *inp)
   s16_t hlen;
 
   u8_t iptxt[20];
-  volatile u8_t iptab[4];
-  u32_t IPaddress;
+  //volatile u8_t iptab[4];
+  //u32_t IPaddress;
   
   ICMP_STATS_INC(icmp.recv);
   snmp_inc_icmpinmsgs();
@@ -103,19 +103,19 @@ icmp_input(struct pbuf *p, struct netif *inp)
     goto lenerr;
   }
 
-  IPaddress = iphdr->src.addr;
-  
-  /* read its IP address */
-  iptab[0] = (u8_t)(IPaddress >> 24);
-  iptab[1] = (u8_t)(IPaddress >> 16);
-  iptab[2] = (u8_t)(IPaddress >> 8);
-  iptab[3] = (u8_t)(IPaddress);
+//  IPaddress = iphdr->src.addr;
+//  
+//  /* read its IP address */
+//  iptab[0] = (u8_t)(IPaddress >> 24);
+//  iptab[1] = (u8_t)(IPaddress >> 16);
+//  iptab[2] = (u8_t)(IPaddress >> 8);
+//  iptab[3] = (u8_t)(IPaddress);
 
-  sprintf((char*)iptxt, "Ping: %d.%d.%d.%d   ", iptab[3], iptab[2], iptab[1], iptab[0]);	
-  
-  LCD_DisplayStringLine(Line4, iptxt);
+//  sprintf((char*)iptxt, "Ping: %d.%d.%d.%d   ", iptab[3], iptab[2], iptab[1], iptab[0]);	
+//  
+//  LCD_DisplayStringLine(Line4, iptxt);
 
-  printf("\n\r%s", iptxt);
+//  printf("\n\r%s", iptxt);
   
   
   type = *((u8_t *)p->payload);

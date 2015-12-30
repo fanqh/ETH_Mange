@@ -132,10 +132,6 @@ void udp_client_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
   iptab[2] = (uint8_t)((uint32_t)(addr->addr) >> 8); 
   iptab[3] = (uint8_t)((uint32_t)(addr->addr));
 
-  sprintf((char*)iptxt, "is: %d.%d.%d.%d     ", iptab[3], iptab[2], iptab[1], iptab[0]);
-	
-  LCD_DisplayStringLine(Line3, "The server's IP add.");
-  LCD_DisplayStringLine(Line4, iptxt);
 //	printf("udp received\r\n");
 
 	len1 = p->tot_len;
@@ -189,18 +185,6 @@ void udp_client_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct
 	
 err_t tcp_client_connected(void *arg, struct tcp_pcb *tpcb, err_t err)
 {
-  LCD_DisplayStringLine(Line5, "Led control started ");
-  
-  /* Display Leds Control blocks */
-  LCD_SetTextColor(Blue);
-  LCD_DrawRect(180, 310, 40, 60);
-  LCD_SetTextColor(Red);
-  LCD_DrawRect(180, 230, 40, 60);
-  LCD_SetTextColor(Yellow);
-  LCD_DrawRect(180, 150, 40, 60);
-  LCD_SetTextColor(Green);
-  LCD_DrawRect(180, 70, 40, 60);
-
   TcpPCB = tpcb;
 	tcp_write(TcpPCB, Sent, sizeof(Sent), 1);
   tcp_recv(tpcb, tcp_client_recv);  

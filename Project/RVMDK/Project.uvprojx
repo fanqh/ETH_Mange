@@ -491,6 +491,11 @@
               <FileType>1</FileType>
               <FilePath>..\src\time2.c</FilePath>
             </File>
+            <File>
+              <FileName>device_infor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\device_infor.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -632,11 +637,6 @@
               <FileName>stm32_eval.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\Utilities\STM32_EVAL\stm32_eval.c</FilePath>
-            </File>
-            <File>
-              <FileName>stm3210c_eval_lcd.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\Utilities\STM32_EVAL\STM3210C_EVAL\stm3210c_eval_lcd.c</FilePath>
             </File>
           </Files>
         </Group>

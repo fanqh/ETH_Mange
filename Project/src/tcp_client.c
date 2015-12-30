@@ -7,11 +7,46 @@
 #include <stdio.h>
 #include "netconf.h"
 #include "udp_client.h"
+#include "device_config.h"
 
 static err_t Tcp_RecFun(void *arg, struct tcp_pcb *tpcb, struct pbuf *p, err_t err);
 static err_t TCP_Client_Connected(void *arg, struct tcp_pcb *tpcb, err_t err);
 static void tcp_err_callback(void *arg, err_t err);
 
+/*
+enum tcp_state {
+  CLOSED      = 0,
+  LISTEN      = 1,
+  SYN_SENT    = 2,
+  SYN_RCVD    = 3,
+  ESTABLISHED = 4,
+  FIN_WAIT_1  = 5,
+  FIN_WAIT_2  = 6,
+  CLOSE_WAIT  = 7,
+  CLOSING     = 8,
+  LAST_ACK    = 9,
+  TIME_WAIT   = 10
+};
+*/
+
+#if TCPDEBUG
+
+uint8_t *tcp_state[]= 
+{
+  "CLOSED",   
+  "LISTEN"      ,
+  "SYN_SENT"    ,
+  "SYN_RCVD"    ,
+  "ESTABLISHED" ,
+  "FIN_WAIT_1"  ,
+  "FIN_WAIT_2"  ,
+  "CLOSE_WAIT"  ,
+  "CLOSING"     ,
+  "LAST_ACK"    ,
+  "TIME_WAIT"  , 
+};
+
+#endif
 
 
 //初始化TCP客户端
@@ -29,6 +64,10 @@ err_t TCP_Client_Attemp_Connect(tcp_struct_t *ts)
 			return ERR_BUF;
 		ts->tstate = S_CONNECTING;		
 	}
+#if TCPDEBUG	
+	printf("ts1 = %s\r\n", tcp_state[ts->tpcb->state]);
+#endif	
+	
 	ret = tcp_bind(ts->tpcb, IP_ADDR_ANY, ts->tlocal_port);
 //	if(ret!=ERR_OK)
 //		return ret;
@@ -39,11 +78,15 @@ err_t TCP_Client_Attemp_Connect(tcp_struct_t *ts)
 		tcp_arg(ts->tpcb, ts);  //回调函数参数传递
 		tcp_err(ts->tpcb, tcp_err_callback);
 	}
-	else
-	{
+#if TCPDEBUG	
+	printf("ts2 = %s\r\n\r\n", tcp_state[ts->tpcb->state]);
+#endif
+	
+//	if(ts->tpcb->state!=SYN_SENT )
+//	{
 //		tcp_client_close(ts);
-//		tcp_connect(ts->tpcb, &(ts->tip), ts->tremote_port, TCP_Client_Connected);
-	}
+//		printf("try to connect ,but state is err\r\n");
+//	}
 	ts->retry = 0;
 	return ret;	
 }
@@ -53,7 +96,11 @@ static err_t TCP_Client_Connected(void *arg, struct tcp_pcb *tpcb, err_t err)
 	tcp_struct_t *ps;
 	
 	ps = (tcp_struct_t*) arg;
-	if(err==ERR_OK)
+	
+#if TCPDEBUG	
+	printf("ts2 = %s\r\n\r\n", tcp_state[ps->tpcb->state]);
+#endif
+	if((err==ERR_OK) && (ps->tpcb->state == ESTABLISHED))
 	{		
 		ps->retry = 0;
 		ps->tstate = S_CONNECTED;

@@ -10,12 +10,13 @@
 #include "udp_client.h"
 #include "device_server.h"
 #include "tcp_client.h"
+#include "device_config.h"
 
 #define SWTICH_ADV_PORT   			 48899
-#define SWITCH_UPD_LOCAL_PORT  	 48899
+#define SWITCH_UPD_LOCAL_PORT  	 	 48899
 
-#define SWITCH_TCP_PORT          8899
-#define SWITCH_TCP_LOCAL_PORT    9008
+#define SWITCH_TCP_PORT              8899
+#define SWITCH_TCP_LOCAL_PORT        9008
 
 
 static void  connectedf(void *arg);
@@ -25,9 +26,11 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 err_t Switch_Tcp_Rec(struct pbuf *tpcb,void *arg, err_t err);
 
 
-//const char connectedcmd[] = "connnect:";
-//const char connecterrcmd[] = "connecterr:";
-//const char closecmd[] = "close:";
+struct ip_addr adv_ip;
+uint8_t udp_init =0;
+struct tcp_pcb *TcpPCB;
+
+uint8_t SwitchAdvCMD[] = "YZ-RECOSCAN";
 
 smart_switch_infor_t switch_infor=
 {
@@ -41,9 +44,7 @@ smart_switch_infor_t switch_infor=
 	{0},     //adv_ip
 	0     //pdev
 };
-struct ip_addr adv_ip;
-uint8_t udp_init =0;
-struct tcp_pcb *TcpPCB;
+
 
 //const uint8_t SwitchAdvCMD[] = "YZ-RECOSCAN";
 
@@ -63,8 +64,40 @@ err_t Switch_Init(device_infor_t *pDev)
 	pDev->udp_num++;
 	switch_infor.pdev = pDev;
 	ret = udp_client_init(&switch_infor.netlink.udp, &switch_infor);
+	Switch_find();
 	return ret;
 }
+
+uint8_t AsciiToDisgital(char a)
+{
+	uint8_t n = 0xff;
+	
+	if((a>=0x30)&&(a<=0x39))
+		n = a-0x30;
+	else if((a>=0x41)&&(a<=0x46))
+		n = a - 0x41 + 10;
+	else if((a>=0x61)&&(a<=0x66))
+		n = a - 0x61 + 10;
+	return n;
+}
+
+int MacAsciiToInt(uint8_t *cp, uint8_t *mac)
+{
+	uint8_t i, a ,b;
+	
+	
+	for(i=0; i<6; i++)
+	{
+		a = AsciiToDisgital(*(cp+2*i));
+		b = AsciiToDisgital(*(cp+2*i+1));
+		if((a==0xff) || (b ==0xff))
+			return 0;
+		else
+			*(mac+i) = a * 10 + b;
+	}
+	return 1;
+}
+
 //switch udp 接收
 static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port)
 {
@@ -74,6 +107,8 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	char *ptr;
 	smart_switch_infor_t *pSw;
 	Dev_Server_infor_t* pserver;
+	uint8_t cp[12],mac[6];
+	Device_t dev;
 	
 	pSw = (smart_switch_infor_t*)arg;
 	pserver = pSw->pdev->server;
@@ -94,7 +129,7 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 		ptr = strstr((char*)rec, ",");
 		if(ptr==NULL)
 			return;
-		memcpy(pSw->smartplug_comm.mac, ptr+1,12);
+		memcpy(cp, ptr+1,12);
 		ptr = strstr((char*)(ptr+1),",");
 		if(ptr==NULL)
 			return;
@@ -104,6 +139,16 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 			return;
 		pSw->smartplug_comm.is_online =(bool) *(ptr+1);
 		pSw->smartplug_comm.state =(bool) *(ptr+3);
+		
+		if(MacAsciiToInt(cp,mac)==1)
+		{
+			dev.type = 1;
+			memcpy(dev.mac, mac, 6);
+			dev.ip_addr.addr = ip_addr.addr;
+			dev.time = GetLocalTime();	
+			
+			dev_insert_list(dev);
+		}
 	}
 	
 	
@@ -116,6 +161,21 @@ static void switch_rec_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	printf("\r\n");
 #endif
   pbuf_free(p);
+}
+
+
+void Switch_find(void)
+{
+	switch_udp_Send(switch_infor.adv_ip, SwitchAdvCMD, sizeof(SwitchAdvCMD)-1);
+}
+
+//switch udp 发送
+err_t switch_udp_Send(struct ip_addr addr, uint8_t *p, uint16_t len)
+{
+	err_t ret = ERR_OK;
+
+	ret = udp_client_Send(&switch_infor.netlink.udp, addr, p, len);
+	return ret;
 }
 
 
@@ -158,16 +218,6 @@ static void connectclose(void *arg)
 	udp_client_Send(&switch_infor.pdev->server->sudp, switch_infor.pdev->server->sudp.uip, p->payload, p->len);
 	pbuf_free(p);
 }
-
-//switch udp 发送
-err_t switch_udp_Send(struct ip_addr addr, uint8_t *p, uint16_t len)
-{
-	err_t ret = ERR_OK;
-
-	ret = udp_client_Send(&switch_infor.netlink.udp, addr, p, len);
-	return ret;
-}
-
 
 
 //初始化TCP客户端

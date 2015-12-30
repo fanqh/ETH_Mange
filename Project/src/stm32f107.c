@@ -248,9 +248,7 @@ void Ethernet_Configuration(void)
   }
   else
   {
-    STM_EVAL_BEEPOn();
     STM_EVAL_LEDOff(LED2);
-    LCD_DisplayStringLine(Line5, "XX ETH Link ERROR XX");
     printf(" ---> 提示: 网口连接失败 Ethernet_Configuration() ETH_ERROR");
     printf("\n\r #网口连接失败, 请检查网线连接是否正常! 连接好网线后请复位系统!\n\r ");
 //    Delay_ARMJISHU(20000000);
@@ -600,119 +598,6 @@ u8 ReadKeyDown(void)
   }
 }
 
-void Key_315M_Wireless_Display(void)
-{
-    static uint16_t Wireless_Debounce = 0, Key_Debounce = 0;
-    __IO uint16_t TextColor, BackColor;
-    
-    LCD_GetColors(&TextColor, &BackColor);
-    /* Set the LCD Text Color */
-    LCD_SetTextColor(LCD_COLOR_YELLOW);
-    LCD_SetBackColor(LCD_COLOR_RED);
-      
-    if(Check_315M_Wireless())
-    {
-        if(1 == Wireless_Debounce)
-        {
-            Wireless_Debounce++;
-            switch(ReadKeyDown())
-            {
-            case KEY1:
-                LCD_DisplayStringLine(Line3, " 315M Wireless Key1 ");
-                break;
-
-            case KEY2:
-                LCD_DisplayStringLine(Line3, " 315M Wireless Key2 ");
-                break;
-
-            case KEY3:
-                LCD_DisplayStringLine(Line3, " 315M Wireless Key3 ");
-                break;
-
-            case KEY4:
-                LCD_DisplayStringLine(Line3, " 315M Wireless Key4 ");
-                break;
-
-            default:
-                Wireless_Debounce = 0;
-            }
-        }
-        else
-        {
-            Wireless_Debounce = 1;
-        }
-    }
-    else
-    {
-        Wireless_Debounce = 0;
-
-        if(NOKEY != ReadKeyDown())
-        {
-            if(0 == Key_Debounce)
-            {
-                Key_Debounce= 1;
-            }
-            else
-            {
-                if(1 == Key_Debounce)
-                {
-                    Key_Debounce++;
-
-                    switch(ReadKeyDown())
-                    {
-                    case KEY1:
-                        LCD_DisplayStringLine(Line3, " Key1               ");
-                        break;
-
-                    case KEY2:
-                        LCD_DisplayStringLine(Line3, "      Key2          ");
-                        break;
-
-                    case KEY3:
-                        LCD_DisplayStringLine(Line3, "           Key3     ");
-                        break;
-
-                    case KEY4:
-                        LCD_DisplayStringLine(Line3, "               Key4 ");
-                        break;
-
-                    default:
-                        Key_Debounce = 0;
-                    }
-                }
-            }
-        }
-        else
-        {
-            Key_Debounce = 0;
-        }
-    }    
-
-    /* Set back the LCD Color */
-    LCD_SetTextColor(TextColor);
-    LCD_SetBackColor(BackColor);
-    
-}
-
-
-
-void Time_Display(uint32_t TimeVar)
-{
-  uint32_t THH = 0, TMM = 0, TSS = 0;
-  uint8_t  TimeStr[] = "                    "; 
-
-  /* Compute  hours */
-  THH = (TimeVar / 3600)%24;
-  /* Compute minutes */
-  TMM = (TimeVar % 3600) / 60;
-  /* Compute seconds */
-  TSS = (TimeVar % 3600) % 60;
-
-  printf("Time: %0.2d:%0.2d:%0.2d\r", THH, TMM, TSS);
-  sprintf((char *)TimeStr, "  Time:  %0.2d:%0.2d:%0.2d  ", THH, TMM, TSS);
-  LCD_DisplayStringLine(Line5, TimeStr);
-}
-
 
 /**
   * @brief  Configures the RTC.
@@ -758,25 +643,4 @@ void RTC_Configuration(void)
 //    ARMJISHU_TouchScreen();
 //}
 
-
-void  RTC_Test(void)
-{
-  static uint32_t localtime = 0;
-
-  RTC_Configuration();
-    
-  printf(" show Time:\n\r"); 
-  localtime = RTC_GetCounter();
-  Time_Display(localtime);
-  while(RTC_GetCounter() == localtime );
-
-  localtime = RTC_GetCounter();
-  Time_Display(localtime);
-  while(RTC_GetCounter() == localtime );
-  
-  localtime = RTC_GetCounter();
-  Time_Display(localtime);
-
-  printf("\n\r");
-}
 /******************* (C) COPYRIGHT 2010 www.armjishu.com 神舟系列*****END OF FILE****/

@@ -13,15 +13,16 @@
 #include "device_server.h"
 #include "netconf.h"
 #include "tcp_client.h"
+#include "device_config.h"
 
 
 #define MANAGE_UDP_SERVER_PORT  9009	
 #define TCP_SERVER_REMOTE_PORT	8899
 #define TCP_SERVER_LOCAL_PORT	9000
-#define TCP_REMOTE_SERVER_IP  192,168,1,2
+#define TCP_REMOTE_SERVER_IP    192,168,1,2
 
 #define VERSION "V1.00"
-#define  SUPPORT_DEV_ONLINE_MAX  64
+
 
 /* Private typedef -----------------------------------------------------------*/
 struct FindCMDResp_t
@@ -31,14 +32,6 @@ struct FindCMDResp_t
 	char ipcmd[3];
 	struct ip_addr local_ip;
 }find_resp;
-
-
-typedef struct 
-{
-	uint8_t type;
-	uint8_t mac[6];
-	uint32_t time;
-}Device_t;
 
 
 /* Private define ------------------------------------------------------------*/                                                                                   
@@ -51,7 +44,7 @@ const char FindCMDResp[] = {'c','m','d',':',0,0,0,0,0,0,'I','P',':',0,0,0,0};
 static uint32_t TK_PreTime = 0;
 
 //		smart_switch_infor_t  pSwitch_infor;
-uint8_t SwitchAdvCMD[] = "YZ-RECOSCAN";
+//uint8_t SwitchAdvCMD[] = "YZ-RECOSCAN";
 uint8_t SmartPlugTurnOnCMD[] = "AT+YZSWITCH=1,ON,201511222133\r\n";
 uint8_t SmartPlugTurnOffCMD[] = "AT+YZSWITCH=1,OFF,201511222133\r\n";
 
@@ -60,92 +53,26 @@ uint8_t TripFindCMD[] = "00sw=all,2015-11-27,21:16:39,+8";
 uint8_t TripTurnoffCMD[] = "GET /?cmd=200&json={\"sn\":\"SWW6012003000015\",\"port\":0,\"state\":0} HTTP/1.1\r\nHost: 100.100.10.119";
 
 
-#define TK_CMD "TK:<<"
-#define TK_CMD_REC "TK:0<<"
-#define MAC_CMD "MC:<<"
-#define VR_CMD "VR:<<"
-#define LT_CMD "LT:"
-#define CM_CMD "CM:commandtype:"
-#define SG_CMD "SG:"
-#define SX_CMD　"SX:<<"
+#define  TK_CMD      "TK:<<"
+#define  TK_CMD_REC  "TK:0<<"
+#define  MAC_CMD     "MC:<<"
+#define  VR_CMD      "VR:<<"
+#define  LT_CMD      "LT:"
+#define  CM_CMD      "CM:commandtype:"
+#define  SG_CMD      "SG:"
+//#define  SX_CMD　    "SX:<<"
 
-Device_t Dev_list[SUPPORT_DEV_ONLINE_MAX];
+#define OK_CMD  "RE:0<<"
+#define ERR_CMD "RE:1<<"
+
+
 uint8_t TK_Flag=0;
 /* Private function prototypes -----------------------------------------------*/
 static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p, struct ip_addr *addr, u16_t port);
 static err_t server_remote_rec(struct pbuf *p,void *arg, err_t err);
 
 
-// -1: 没有找到相同的mac
-// 0--63 找到了相同的mac
-int dev_find_list(Device_t dev)
-{
-	uint8_t i,j;
-	
-	for(i=0; i<SUPPORT_DEV_ONLINE_MAX; i++)
-	{
-		if((Dev_list[i].type<=3)&&(Dev_list[i].type!=0))  // 1 2 3
-		{
-			for(j=0; j<6; j++)
-			{
-				if(dev.mac[j]!=Dev_list[i].mac[j])
-					break;
-			}
-			if(j==6)
-				return i;
-		}
-	}
-	return -1;
-}
 
-//-1 没有空的MAC
-//0--63 返回空的list
-int dev_find_Null_list(void)
-{
-	uint8_t i;
-	
-	for(i=0; i<SUPPORT_DEV_ONLINE_MAX; i++)
-	{
-		if((Dev_list[i].type>3)||(Dev_list[i].type==0))  
-			return i;
-	}
-	return -1;
-}
-
-int dev_insert_list(Device_t dev)
-{
-	int a;
-	
-	if(!((dev.type==1)||(dev.type==2)||(dev.type==3)))
-		return -1;
-	
-	if(dev_find_list(dev)==-1)
-	{
-		a = dev_find_Null_list();
-		if((a>=0)&&(a<=SUPPORT_DEV_ONLINE_MAX-1))
-		{
-			memcpy(&Dev_list[a], &dev, sizeof( Device_t));
-			return a;
-		}
-			
-	}
-	return -1;
-}
-int dev_refresh_list(Device_t dev)
-{
-	int n;
-	
-	n = dev_find_list(dev);
-	if(n!=-1)
-	{
-		Dev_list[n].time = GetLocalTime();
-		return n;
-	}
-	else
-		dev_insert_list(dev);
-	return 1;
-		
-}
 
 
 Dev_Server_infor_t dev_Server_inf=
@@ -178,21 +105,32 @@ void server_pro(uint32_t time)
 	static uint32_t t2=0;
 	static uint32_t tt=0;
 	
-	if((dev_Server_inf.stcp.tstate!=S_CONNECTED)&&(time-t1>=5000))
+	if((dev_Server_inf.stcp.tstate!=S_CONNECTED)&&(time-t1>=3000))
 	{
 		t1 = time;
 		tt++;
 		Tcp_Connect_Remote_Server();
 		printf("connect to remote : %d.....\r\n",tt);
 	}
-	//if(GetLocalTime()-TK_PreTime>=30000*6)
-	//	tcp_client_close(&dev_Server_inf.stcp);
+	if(tt>30)
+	{  
+		tt = 0;
+		printf("connect num is over , close pcb\r\n");
+		tcp_client_close(&dev_Server_inf.stcp);
+	}
+	if(time-t2>=30000)
+	{
+		t2 = time;
+		Switch_find();
+	}
+	if(time-TK_PreTime>=30000*6)
+		tcp_client_close(&dev_Server_inf.stcp);
 }
 
 static err_t server_remote_rec(struct pbuf *p,void *arg, err_t err)
 {
 	char *buff;
-	char *ptr;
+	char *ptr, *p1;
 	
 	if(p->len>0)
 		buff = (char*)p->payload;	
@@ -207,7 +145,7 @@ static err_t server_remote_rec(struct pbuf *p,void *arg, err_t err)
 	}
 	else if(strstr(buff, MAC_CMD)!=NULL)
 	{
-		uint8_t cmd_res[12];
+		uint8_t cmd_res[11];
 		device_infor_t *pdev;
 		
 		pdev = dev_Server_inf.arg;
@@ -228,14 +166,47 @@ static err_t server_remote_rec(struct pbuf *p,void *arg, err_t err)
 	}
 	else if((ptr = strstr(buff,CM_CMD))!=NULL)
 	{
-		uint8_t type;
+		Device_t dev;
+		int index;
+		uint8_t contentlen;
 		
-		type = *(ptr+15);
-		switch (type)
+		dev.type = *(ptr+15);
+		if((ptr = strstr(buff,"mac:"))==NULL)
+			return TCP_Send(&dev_Server_inf.stcp, ERR_CMD, sizeof(ERR_CMD));
+		if((dev.type==1) ||(dev.type==2))
+			memcpy(dev.mac, ptr+4, 6);
+		else
+			memcpy(dev.mac, ptr+4, 32);
+		
+		index = dev_find_list(dev);
+		if(index==-1)
+			return TCP_Send(&dev_Server_inf.stcp, ERR_CMD, sizeof(ERR_CMD));
+		else
+			dev = Dev_list[index];
+		if((ptr = strstr(buff,"content:"))==NULL)
+			return TCP_Send(&dev_Server_inf.stcp, ERR_CMD, sizeof(ERR_CMD));
+		if((p1 = strstr(buff,",mac"))==NULL)
+			return TCP_Send(&dev_Server_inf.stcp, ERR_CMD, sizeof(ERR_CMD));
+		contentlen = addr1Toaddr2len(ptr, p1);
+		
+		switch (dev.type)
 		{
-			case 1:
+			case 1:  //reco
+				Switch_TCP_Send(&switch_infor, ptr, contentlen);
 				break;
-			case 2:
+			case 2:  //revogi
+				break;
+			case 3:  //yaokongbao
+				break;
+			case 4:  //红外
+				break;
+			case 5:  //433
+				break;
+			case 6:   //315
+				break;
+			case 7:   //学习
+				break;
+			default:
 				break;
 			
 		}
@@ -270,6 +241,7 @@ err_t udp_server_init(void *pd)
 	dev_Server_inf.sudp.recv = udp_server_callback;
 //	pd->udp_num++;
 	udp_recv(dev_Server_inf.sudp.upcb, dev_Server_inf.sudp.recv, &dev_Server_inf);  
+
 	return ret;
 }
 
@@ -360,8 +332,8 @@ static void udp_server_callback(void *arg, struct udp_pcb *upcb, struct pbuf *p,
 	{
 		Broadlink_transpond(buff, p->len );
 	}
-	else if(strstr((char*)buff,"plugfind"))
-		switch_udp_Send(switch_infor.adv_ip, SwitchAdvCMD, sizeof(SwitchAdvCMD)-1);
+//	else if(strstr((char*)buff,"plugfind"))
+//		switch_udp_Send(switch_infor.adv_ip, SwitchAdvCMD, sizeof(SwitchAdvCMD)-1);
 	else if(strstr((char*)buff,"plugconnect"))
 		Switch_TCP_Client_Attemp_Connect(&switch_infor);
 	else if(strstr((char*)buff,"plugctrol:on"))
